@@ -1,0 +1,21 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate config.js
+        run: echo "window.CONFIG = { BRIDGE_SERVICE_URL: '${{ secrets.BRIDGE_SERVICE_URL }}', BRIDGE_SERVICE_REST_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}', BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}' };" > docs/config.js
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: docs
