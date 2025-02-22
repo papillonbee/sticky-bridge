@@ -12,9 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Remove old config.js
-        run: rm -f docs/config.js
-
       - name: Generate config.js
         run: |
           echo "window.CONFIG = {" | tee docs/config.js
@@ -22,9 +19,6 @@ jobs:
           echo "  BRIDGE_SERVICE_REST_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}'," | tee -a docs/config.js
           echo "  BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}'" | tee -a docs/config.js
           echo "};" | tee -a docs/config.js
-
-      - name: Check generated config.js
-        run: cat docs/config.js
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
