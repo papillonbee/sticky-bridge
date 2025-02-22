@@ -105,6 +105,7 @@
             }
         </style>
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
+        <script src="./config.js"></script>
     </head>
     <body>
         <h1>Sticky Bridge!</h1>
@@ -168,7 +169,7 @@
             }
 
             getWebSocketProtocol = () => {
-                return "wss";
+                return window.CONFIG.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL;
             }
 
             isValidJson = (jsonString) => {
@@ -305,11 +306,11 @@
                     tooltip.textContent = "No bid winner yet!";
                     return;
                 }
-                let text = `${data.bidWinner} won the bid`;
+                let text = `${data.bidWinner} won the bid with ${data.bidLevel}`;
                 if (data.trumpSuit) {
-                    text += ` with trump suit ${data.trumpSuit}`;
+                    text += `${data.trumpSuit}`;
                 } else {
-                    text += ` with no trump suit`;
+                    text += ` no trump`;
                 }
                 if (!data.partner) {
                     tooltip.textContent = text;
@@ -408,11 +409,11 @@
             }
 
             getRestProtocol = () => {
-                return "https";
+                return window.CONFIG.BRIDGE_SERVICE_REST_PROTOCOL;
             }
 
             getBridgeServiceUrl = () => {
-                return "bridge-service-713826805353.us-central1.run.app";
+                return window.CONFIG.BRIDGE_SERVICE_URL;
             }
 
             buildBridgeServiceRequest = () => {
