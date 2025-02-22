@@ -104,8 +104,12 @@
                 visibility: visible;
             }
         </style>
+        <script>
+            let script = document.createElement("script");
+            script.src = "config.js?v=" + Date.now();
+            document.head.appendChild(script);
+        </script>
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
-        <script src="./config.js"></script>
     </head>
     <body>
         <h1>Sticky Bridge!</h1>
