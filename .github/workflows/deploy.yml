@@ -11,16 +11,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Debug Environment Variables
+        run: |
+          echo "Using BRIDGE_SERVICE_URL: ${{ secrets.BRIDGE_SERVICE_URL }}"
+          echo "Using BRIDGE_SERVICE_REST_PROTOCOL: ${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}"
+          echo "Using BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: ${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}"
+
       - name: Remove old config.js
         run: rm -f docs/config.js
 
       - name: Generate config.js
         run: |
-          echo "window.CONFIG = { 
-            BRIDGE_SERVICE_URL: '${{ secrets.BRIDGE_SERVICE_URL }}', 
-            BRIDGE_SERVICE_REST_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}', 
-            BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}' 
-          };" > docs/config.js
+          echo "window.CONFIG = {" | tee docs/config.js
+          echo "  BRIDGE_SERVICE_URL: '${{ secrets.BRIDGE_SERVICE_URL }}'," | tee -a docs/config.js
+          echo "  BRIDGE_SERVICE_REST_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}'," | tee -a docs/config.js
+          echo "  BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}'" | tee -a docs/config.js
+          echo "};" | tee -a docs/config.js
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
