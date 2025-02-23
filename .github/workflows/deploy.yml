@@ -3,22 +3,14 @@ on:
   push:
     branches:
       - main
+      - release/*
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Debug Environment Variables
-        run: |
-          echo "Using BRIDGE_SERVICE_URL: ${{ secrets.BRIDGE_SERVICE_URL }}"
-          echo "Using BRIDGE_SERVICE_REST_PROTOCOL: ${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}"
-          echo "Using BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: ${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}"
-
-      - name: Remove old config.js
-        run: rm -f docs/config.js
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Generate config.js
         run: |
@@ -28,8 +20,22 @@ jobs:
           echo "  BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}'" | tee -a docs/config.js
           echo "};" | tee -a docs/config.js
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload HTML, CSS, and JS files
+        uses: actions/upload-pages-artifact@v3
         with:
-          branch: gh-pages
-          folder: docs
+          path: docs/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
