@@ -9,8 +9,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Generate config.js
         run: |
@@ -20,9 +20,10 @@ jobs:
           echo "  BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}'" | tee -a docs/config.js
           echo "};" | tee -a docs/config.js
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload HTML, CSS, and JS files
+        uses: actions/upload-pages-artifact@v3
         with:
-          branch: gh-pages
-          folder: docs
-          token: ${{ secrets.GH_PAT }}
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
