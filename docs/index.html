@@ -1,17 +1,40 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
         <style>
             html, body {
                 display: flex;
                 align-items: center;
                 flex-direction: column;
+                width: 100vw;
+                overflow-x: hidden;
             }
-            h1 {
+            h2 {
                 transition: transform 0.3s ease, box-shadow 0.3s ease;   
             }
-            h1:hover {
+            h2:hover {
                 transform: scale(1.1);
+            }
+            #connect-form-container form {
+                width: 90vw;
+                flex-wrap: nowrap;
+                scroll-behavior: smooth;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                column-gap: 5px;
+            }
+            #connect-form-container input {
+                width: 18vw;
+            }
+            #chat-form-container {
+                flex-wrap: nowrap;
+                scroll-behavior: smooth;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                column-gap: 5px;
             }
             playing-card {
                 width: 100px;
@@ -21,17 +44,16 @@
             }
             playing-card:hover {
                 transform: scale(1.1);
-                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
             }
             [winner-card=true] img {
                 outline: 3px solid gold;
             }
             #messages {
                 width: 100vw;
-                height: 10vh;
+                height: 9vh;
                 overflow-y: auto;
                 flex-wrap: nowrap;
-                padding: 20px;
+                padding: 10px;
                 scroll-behavior: smooth;
                 list-style-type: none;
                 display: flex;
@@ -40,40 +62,49 @@
             }
             #tricks {
                 width: 100vw;
-                height: 30vh;
+                height: 140px;
                 overflow-y: auto;
                 flex-wrap: nowrap;
-                padding: 20px;
+                padding: 15px;
                 scroll-behavior: smooth;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
             }
+            #tricks div {
+                width: 190px;
+            }
             div[id^="player-tricks-"] {
                 padding: 5px;
             }
             #player-hand {
-                width: 100vw;
-                height: 20vh;
+                max-width: 70%;
+                padding-left: 15px;
+                padding-right: 85px;
+                padding-top: 15px;
+                padding-bottom: 15px;
                 overflow-x: auto;
                 flex-wrap: nowrap;
-                padding: 20px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
             }
             #score-board {
                 width: 70vw;
-                height: 5vh;
                 overflow: auto;
                 flex-wrap: nowrap;
-                padding: 10px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
             }
+            #score-board div {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;   
+            }
+            #score-board div:hover {
+                transform: scale(1.1);
+            }
             div[id^="score-"] {
-                padding: 20px;
+                padding: 0.5vh;
             }
             #game-state-info {
                 position: relative;
@@ -108,15 +139,15 @@
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
     </head>
     <body>
-        <h1>Sticky Bridge!</h1>
-        <form action="" onsubmit="connect(event)">
-            <label style="padding: 5px;">Game: <input type="text" id="game-id" autocomplete="off"/></label>
-            <label style="padding: 5px;">Player: <input type="text" id="player-id" autocomplete="off"/></label>
+        <h2>Sticky Bridge!</h2>
+        <form id="connect-form-container" action="" onsubmit="connect(event)">
+            <label>Game: <input type="text" id="game-id" autocomplete="off"/></label>
+            <label>Player: <input type="text" id="player-id" autocomplete="off"/></label>
             <button>Connect</button>
         </form>
         <ul id="messages"></ul>
         <div id="tricks"></div>
-        <form action="" onsubmit="sendMessage(event)">
+        <form id="chat-form-container" action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
             <div id="game-state-info">ℹ
@@ -303,7 +334,7 @@
                 const gameStateInfo = document.getElementById("game-state-info");
                 const tooltip = gameStateInfo.querySelector(".tooltip");
                 if (!data.bidWinner) {
-                    tooltip.textContent = "No bid winner yet!";
+                    tooltip.innerHTML = "No bid winner yet!";
                     return;
                 }
                 let text = `${data.bidWinner} won the bid with ${data.bidLevel}`;
@@ -313,11 +344,11 @@
                     text += ` no trump`;
                 }
                 if (!data.partner) {
-                    tooltip.textContent = text;
+                    tooltip.innerHTML = text;
                     return;
                 }
-                text += ` and called partner ${data.partner}`;
-                tooltip.textContent = text;
+                text += `<br>and called partner ${data.partner}`;
+                tooltip.innerHTML = text;
             }
 
             buildScoreBoard = (data) => {
@@ -477,6 +508,6 @@
             }
 
             document.addEventListener("DOMContentLoaded", createFaviconPlayingCard);
-            </script>
+        </script>
     </body>
 </html>
