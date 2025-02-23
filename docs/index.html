@@ -10,10 +10,10 @@
                 width: 100vw;
                 overflow-x: hidden;
             }
-            h1 {
+            h2 {
                 transition: transform 0.3s ease, box-shadow 0.3s ease;   
             }
-            h1:hover {
+            h2:hover {
                 transform: scale(1.1);
             }
             #connect-form-container form {
@@ -53,7 +53,7 @@
                 height: 9vh;
                 overflow-y: auto;
                 flex-wrap: nowrap;
-                padding: 20px;
+                padding: 10px;
                 scroll-behavior: smooth;
                 list-style-type: none;
                 display: flex;
@@ -139,7 +139,7 @@
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
     </head>
     <body>
-        <h1>Sticky Bridge!</h1>
+        <h2>Sticky Bridge!</h2>
         <form id="connect-form-container" action="" onsubmit="connect(event)">
             <label>Game: <input type="text" id="game-id" autocomplete="off"/></label>
             <label>Player: <input type="text" id="player-id" autocomplete="off"/></label>
