@@ -1,0 +1,5 @@
+window.CONFIG = {
+    BRIDGE_SERVICE_URL: "localhost:8000",
+    BRIDGE_SERVICE_REST_PROTOCOL: "http",
+    BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: "ws",
+};
