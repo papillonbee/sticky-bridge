@@ -160,9 +160,6 @@
             let ws = null;
             connect = async (event) => {
                 event.preventDefault();
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.close();
-                }
                 let createResponse = await createGame();
                 if (!(createResponse && (createResponse.code === 0 || createResponse.code === 10019))) {
                     alert(createResponse?.msg);
@@ -181,10 +178,24 @@
                     return;
                 }
                 await onReceiveGameData(viewResponse.data);
+                connectWebSocket();
+            }
+
+            connectWebSocket = () => {
+                if (ws) {
+                    console.log(ws);
+                    console.log(ws.readyState);
+                    console.log("WebSocket already connected. Closing WebSocket..");
+                    ws.close();
+                }
                 const gameId = document.getElementById("game-id");
                 const playerId = document.getElementById("player-id");
                 ws = new WebSocket(getBridgeServiceWebSocketUrl(gameId.value, playerId.value));
+
+                ws.onopen = () => console.log("WebSocket connected");
+
                 ws.onmessage = async (event) => {
+                    console.log("Received:", event.data);
                     if (isValidJson(event.data)) {
                         const data = JSON.parse(event.data);
                         await onReceiveGameData(data);
@@ -192,6 +203,14 @@
                         addMessage(event.data);
                         event.preventDefault();
                     }
+                };
+                ws.onclose = (event) => {
+                    console.log("WebSocket closed:", event.reason);
+                }
+
+                ws.onerror = (error) => {
+                    console.error("WebSocket error:", error);
+                    ws.close();
                 };
             }
 
