@@ -14,16 +14,16 @@ jobs:
 
       - name: Generate config.js
         run: |
-          echo "window.CONFIG = {" | tee docs/config.js
-          echo "  BRIDGE_SERVICE_URL: '${{ secrets.BRIDGE_SERVICE_URL }}'," | tee -a docs/config.js
-          echo "  BRIDGE_SERVICE_REST_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}'," | tee -a docs/config.js
-          echo "  BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}'" | tee -a docs/config.js
-          echo "};" | tee -a docs/config.js
+          echo "window.CONFIG = {" | tee src/config.js
+          echo "  BRIDGE_SERVICE_URL: '${{ secrets.BRIDGE_SERVICE_URL }}'," | tee -a src/config.js
+          echo "  BRIDGE_SERVICE_REST_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_REST_PROTOCOL }}'," | tee -a src/config.js
+          echo "  BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL: '${{ secrets.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL }}'" | tee -a src/config.js
+          echo "};" | tee -a src/config.js
 
       - name: Upload HTML, CSS, and JS files
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/
+          path: src/
 
   deploy:
     runs-on: ubuntu-latest
