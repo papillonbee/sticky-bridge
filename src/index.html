@@ -134,6 +134,25 @@
                 opacity: 1;
                 visibility: visible;
             }
+            .modal {
+                display: none;
+                position: absolute;
+                z-index: 1;
+                background-color: rgba(0, 0, 0, 0.15);
+                border-radius: 8px;
+            }
+            .modal-content {
+                background-color: rgba(255, 255, 255, 0.4);
+                padding: 20px;
+                border: 1px solid #888;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
         </style>
         <script src="./config.js"></script>
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
@@ -156,6 +175,11 @@
         </form>
         <div id="player-hand"></div>
         <div id="score-board"></div>
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <button id="play-card-btn">Play</button>
+            </div>
+        </div>
         <script>
             let ws = null;
             connect = async (event) => {
@@ -223,6 +247,7 @@
                 buildScoreBoard(data);
                 await sleep(200);
                 promptPlayerAction(data);
+                buildPlayCardModal(data);
             }
 
             addMessage = (text) => {
@@ -376,6 +401,65 @@
                 }
             }
 
+            const modal = document.getElementById("modal");
+            let selectedPlayingCard = null;
+
+            buildPlayCardModal = (data) => {
+                if (data.playerAction !== "TRICK") {
+                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
+                        console.log("remove openPlayCardModal");
+                        playingCard.removeEventListener("click", openPlayCardModal);
+                    });
+                } else {
+                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
+                        playingCard.addEventListener("click", openPlayCardModal);
+                    });
+                }
+
+                const playCardBtn = document.getElementById("play-card-btn");
+
+                playCardBtn.replaceWith(playCardBtn.cloneNode(true));
+                document.getElementById("play-card-btn").addEventListener("click", async (event) => {
+                    if (data.playerAction !== "TRICK") {
+                        return;
+                    }
+                    await playCard();
+                });
+            }
+
+            openPlayCardModal = (event) => {
+                event.stopPropagation();
+                const playingCard = event.currentTarget;
+                const card = playingCard.getAttribute("cid");
+
+                selectedPlayingCard = playingCard;
+
+                const cardRect = playingCard.getBoundingClientRect();
+
+                modal.style.top = `${cardRect.top + window.scrollY + cardRect.height / 2}px`;
+                modal.style.left = `${cardRect.left + cardRect.width / 2}px`;
+                modal.style.transform = "translate(-50%, -50%)";
+                modal.style.display = "block";
+            }
+
+            playCard = async () => {
+                if (selectedPlayingCard) {
+                    const trickInput = selectedPlayingCard.getAttribute("cid")
+                    let trickResponse = await trick(trickInput);
+                    if (trickResponse && trickResponse.code !== 0) {
+                        alert(trickResponse?.msg);
+                    }
+                    modal.style.display = "none";
+                }
+            }
+
+            const modalContent = document.querySelector(".modal-content");
+            window.addEventListener("click", (event) => {
+                if (!modalContent.contains(event.target)) {
+                    modal.style.display = "none";
+                }
+            });
+
             promptPlayerAction = async (data) => {
                 if (data.playerAction === "BID") {
                     const bidInput = prompt("Your turn to bid!");
@@ -389,13 +473,6 @@
                     let partnerResponse = await partner(partnerInput);
                     if (partnerResponse && partnerResponse.code !== 0) {
                         alert(partnerResponse?.msg);
-                    }
-                }
-                if (data.playerAction === "TRICK") {
-                    const trickInput = prompt("Your turn to play trick!");
-                    let trickResponse = await trick(trickInput);
-                    if (trickResponse && trickResponse.code !== 0) {
-                        alert(trickResponse?.msg);
                     }
                 }
             }
