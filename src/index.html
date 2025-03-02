@@ -36,6 +36,18 @@
                 align-items: center;
                 column-gap: 5px;
             }
+            #bid-form-container fieldset,
+            #choose-partner-form-container {
+                border: none;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                column-gap: 5px;
+                white-space: nowrap;
+            }
+            #choose-partner-form-container input {
+                width: 18vw;
+            }
             playing-card {
                 width: 100px;
                 height: 140px;
@@ -60,7 +72,7 @@
                 flex-direction: column;
                 align-items: center;
             }
-            #tricks {
+            #game-state-history {
                 width: 100vw;
                 height: 140px;
                 overflow-y: auto;
@@ -71,8 +83,22 @@
                 flex-direction: column;
                 align-items: center;
             }
-            #tricks div {
+            #game-state-history #bids div,
+            #game-state-history #partner div,
+            #game-state-history #tricks div {
                 width: 190px;
+            }
+            #game-state-history #bids div,
+            #game-state-history #partner div {
+                text-align: center;
+            }
+            #game-state-history #bids #player-bid-turn,
+            #game-state-history #partner #player-choose-partner-turn {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            #game-state-history #bids #player-bid-turn:hover,
+            #game-state-history #partner #player-choose-partner-turn:hover {
+                transform: scale(1.1);
             }
             div[id^="player-tricks-"] {
                 padding: 5px;
@@ -98,7 +124,7 @@
                 align-items: center;
             }
             #score-board div {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;   
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
             }
             #score-board div:hover {
                 transform: scale(1.1);
@@ -134,6 +160,26 @@
                 opacity: 1;
                 visibility: visible;
             }
+            .modal {
+                display: none;
+                position: absolute;
+                z-index: 1;
+            }
+            .modal-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+            #bid-modal .modal-content,
+            #choose-partner-modal .modal-content {
+                background-color: rgba(255, 255, 255, 1);
+                padding: 10px;
+                border: 1px solid #888;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
         </style>
         <script src="./config.js"></script>
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
@@ -146,7 +192,11 @@
             <button>Connect</button>
         </form>
         <ul id="messages"></ul>
-        <div id="tricks"></div>
+        <div id="game-state-history">
+            <div id="bids"></div>
+            <div id="partner"></div>
+            <div id="tricks"></div>
+        </div>
         <form id="chat-form-container" action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
@@ -156,13 +206,48 @@
         </form>
         <div id="player-hand"></div>
         <div id="score-board"></div>
+        <div id="bid-modal" class="modal">
+            <div class="modal-content">
+                <form id="bid-form-container" action="" onsubmit="sendBid(event)">
+                    <fieldset>
+                        <label>1:<input type="radio" name="bid-level" value="1"></label>
+                        <label>2:<input type="radio" name="bid-level" value="2"></label>
+                        <label>3:<input type="radio" name="bid-level" value="3"></label>
+                        <label>4:<input type="radio" name="bid-level" value="4"></label>
+                        <label>5:<input type="radio" name="bid-level" value="5"></label>
+                        <label>6:<input type="radio" name="bid-level" value="6"></label>
+                        <label>7:<input type="radio" name="bid-level" value="7"></label>
+                      </fieldset>
+                    <fieldset>
+                      <label>C:<input type="radio" name="bid-suit" value="C"></label>
+                      <label>D:<input type="radio" name="bid-suit" value="D"></label>
+                      <label>H:<input type="radio" name="bid-suit" value="H"></label>
+                      <label>S:<input type="radio" name="bid-suit" value="S"></label>
+                      <label>NT:<input type="radio" name="bid-suit" value="NT"></label>
+                    </fieldset>
+                    <button value="pass">Pass</button>
+                    or
+                    <button value="bid">Bid</button>
+                  </form>
+            </div>
+        </div>
+        <div id="choose-partner-modal" class="modal">
+            <div class="modal-content">
+                <form id="choose-partner-form-container" action="" onsubmit="sendChoosePartner(event)">
+                    <label>Partner card: <input type="text" id="partner-card" autocomplete="off"/></label>
+                    <button>Choose</button>
+                </form>
+            </div>
+        </div>
+        <div id="play-card-modal" class="modal">
+            <div class="modal-content">
+                <button id="play-card-btn">Play</button>
+            </div>
+        </div>
         <script>
             let ws = null;
             connect = async (event) => {
                 event.preventDefault();
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.close();
-                }
                 let createResponse = await createGame();
                 if (!(createResponse && (createResponse.code === 0 || createResponse.code === 10019))) {
                     alert(createResponse?.msg);
@@ -181,6 +266,13 @@
                     return;
                 }
                 await onReceiveGameData(viewResponse.data);
+                connectWebSocket();
+            }
+
+            connectWebSocket = () => {
+                if (ws) {
+                    ws.close();
+                }
                 const gameId = document.getElementById("game-id");
                 const playerId = document.getElementById("player-id");
                 ws = new WebSocket(getBridgeServiceWebSocketUrl(gameId.value, playerId.value));
@@ -214,11 +306,12 @@
 
             onReceiveGameData = async (data) => {
                 buildPlayerHand(data);
-                buildTricks(data);
+                buildGameStateHistory(data);
                 buildGameStateInfo(data);
                 buildScoreBoard(data);
-                await sleep(200);
-                promptPlayerAction(data);
+                buildBidModal(data);
+                buildChoosePartnerModal(data);
+                buildPlayCardModal(data);
             }
 
             addMessage = (text) => {
@@ -227,10 +320,6 @@
                 let messages = document.getElementById("messages");
                 messages.appendChild(li);
                 messages.scrollTop = messages.scrollHeight;
-            }
-
-            sleep = (ms) => {
-                return new Promise(resolve => setTimeout(resolve, ms));
             }
 
             sendMessage = (event) => {
@@ -264,6 +353,98 @@
                 });
             }
 
+            buildGameStateHistory = (data) => {
+                buildBids(data);
+                buildPartner(data);
+                buildTricks(data);
+                const gameStateHistoryContainer = document.getElementById("game-state-history");
+                requestAnimationFrame(() => {
+                    gameStateHistoryContainer.scrollTop = gameStateHistoryContainer.scrollHeight;
+                });
+            }
+
+            buildBids = (data) => {
+                const bids = data.bids;
+                const bidsContainer = document.getElementById("bids");
+                
+                const playerBidTurnContainerId = `player-bid-turn`;
+                let playerBidTurnContainer = document.getElementById(playerBidTurnContainerId);
+                if (data.playerAction !== "BID") {
+                    if (playerBidTurnContainer) {
+                        bidsContainer.removeChild(playerBidTurnContainer);
+                    }
+                }
+
+                bids.forEach((bid, i) => {
+                    const bidContainerId = `bid-${i}`;
+                    let bidContainer = Array.from(bidsContainer.children).find(bidContainer => bidContainer.id === bidContainerId);
+                    if (!bidContainer) {
+                        bidContainer = document.createElement("div");
+                        bidContainer.id = bidContainerId;
+                        bidsContainer.appendChild(bidContainer);
+                    }
+                    if (bid.bid) {
+                        bidContainer.innerHTML = `${bid.playerId} bids ${bid.bid}`;
+                    } else {
+                        bidContainer.innerHTML = `${bid.playerId} passes`;
+                    }
+                });
+                Array.from(bidsContainer.children).forEach((bidContainer, i) => {
+                    if (i >= bids.length) {
+                        bidsContainer.removeChild(bidContainer);
+                    }
+                });
+
+                if (data.playerAction === "BID") {
+                    if (!playerBidTurnContainer) {
+                        playerBidTurnContainer = document.createElement("div");
+                        playerBidTurnContainer.id = playerBidTurnContainerId;
+                        bidsContainer.appendChild(playerBidTurnContainer);
+                    }
+                    playerBidTurnContainer.innerHTML = `<b>Your turn to bid!</b>`;
+                }
+            }
+
+            buildPartner = (data) => {
+                const partner = data.partner;
+                const partnerContainer = document.getElementById("partner");
+                if (partner) {
+                    const chosenPartnerContainerId = `chosen-partner`;
+                    let chosenPartnerContainer = Array.from(partnerContainer.children).find(child => child.id === chosenPartnerContainerId);
+                    if (!chosenPartnerContainer) {
+                        chosenPartnerContainer = document.createElement("div");
+                        chosenPartnerContainer.id = chosenPartnerContainerId;
+                        partnerContainer.appendChild(chosenPartnerContainer);
+                    }
+                    chosenPartnerContainer.innerHTML = `${data.bidWinner} chooses ${partner}`;
+                }
+                Array.from(partnerContainer.children).forEach(child => {
+                    if (!partner) {
+                        partnerContainer.removeChild(child);
+                    }
+                });
+
+                buildPlayerChoosePartnerTurn(data);
+            }
+
+            buildPlayerChoosePartnerTurn = (data) => {
+                const partnerContainer = document.getElementById("partner");
+                const playerChoosePartnerTurnContainerId = `player-choose-partner-turn`;
+                let playerChoosePartnerTurnContainer = document.getElementById(playerChoosePartnerTurnContainerId);
+                if (data.playerAction === "CHOOSE_PARTNER") {
+                    if (!playerChoosePartnerTurnContainer) {
+                        playerChoosePartnerTurnContainer = document.createElement("div");
+                        playerChoosePartnerTurnContainer.id = playerChoosePartnerTurnContainerId;
+                        partnerContainer.appendChild(playerChoosePartnerTurnContainer);
+                    }
+                    playerChoosePartnerTurnContainer.innerHTML = `<b>Your turn to choose partner!</b>`;
+                } else {
+                    if (playerChoosePartnerTurnContainer) {
+                        partnerContainer.removeChild(playerChoosePartnerTurnContainer);
+                    }
+                }
+            }
+
             buildTricks = (data) => {
                 const tricks = data.tricks;
                 const tricksContainer = document.getElementById("tricks");
@@ -282,7 +463,6 @@
                         tricksContainer.removeChild(playerTricksContainer);
                     }
                 });
-                tricksContainer.scrollTop = tricksContainer.scrollHeight;
             }
 
             buildPlayerTricks = (playerTricksContainer, playerTricks) => {
@@ -327,7 +507,7 @@
                     if (!playerTricks.map(playerTrick => playerTrick.trick).includes(cardId)) {
                         playerTricksContainer.removeChild(playerCard);
                     }
-                })
+                });
             }
 
             buildGameStateInfo = (data) => {
@@ -361,7 +541,7 @@
                         scoreContainer.id = `score-${i}`;
                         scoreBoard.appendChild(scoreContainer);
                     }
-                    if (data.playerId === score.playerId) {
+                    if (data.playerTurn === score.playerId) {
                         scoreContainer.innerHTML = `<b>${score.playerId}: ${score.score}</b>`;
                     } else {
                         scoreContainer.innerHTML = `${score.playerId}: ${score.score}`;
@@ -372,29 +552,149 @@
                 }
             }
 
-            promptPlayerAction = async (data) => {
+            const bidModal = document.getElementById("bid-modal");
+
+            buildBidModal = (data) => {
+                const playerBidTurnContainer = document.getElementById("player-bid-turn");
                 if (data.playerAction === "BID") {
-                    const bidInput = prompt("Your turn to bid!");
-                    let bidResponse = await bid(bidInput);
-                    if (bidResponse && bidResponse.code !== 0) {
-                        alert(bidResponse?.msg);
-                    }
+                    playerBidTurnContainer.addEventListener("click", openBidModal);
                 }
+            }
+
+            openBidModal = (event) => {
+                event.stopPropagation();
+                const playerBidTurnContainer = event.currentTarget;
+
+                const bidRect = playerBidTurnContainer.getBoundingClientRect();
+
+                bidModal.style.top = `${bidRect.top + window.scrollY + bidRect.height / 2}px`;
+                bidModal.style.left = `${bidRect.left + bidRect.width / 2}px`;
+                bidModal.style.transform = "translate(-50%, -50%)";
+                bidModal.style.display = "block";
+            }
+
+            sendBid = async (event) => {
+                event.preventDefault();
+                const clickedButton = event.submitter.value;
+                let bidInput = null;
+                if (clickedButton === "bid") {
+                    const selectedBidLevel = document.querySelector('input[name="bid-level"]:checked');
+                    const selectedBidSuit = document.querySelector('input[name="bid-suit"]:checked');
+                    if (!(selectedBidLevel && selectedBidSuit)) {
+                        return;
+                    }
+                    bidInput = `${selectedBidLevel.value}${selectedBidSuit.value}`;
+                }
+                if (clickedButton === "pass") {
+                    bidInput = "P";
+                }
+                
+                let bidResponse = await bid(bidInput);
+                if (bidResponse && bidResponse.code !== 0) {
+                    alert(bidResponse?.msg);
+                }
+                bidModal.style.display = "none";
+            }
+
+            const choosePartnerModal = document.getElementById("choose-partner-modal");
+
+            buildChoosePartnerModal = (data) => {
+                const playerChoosePartnerTurnContainer = document.getElementById("player-choose-partner-turn");
                 if (data.playerAction === "CHOOSE_PARTNER") {
-                    const partnerInput = prompt("Your turn to choose partner!");
-                    let partnerResponse = await partner(partnerInput);
-                    if (partnerResponse && partnerResponse.code !== 0) {
-                        alert(partnerResponse?.msg);
-                    }
+                    playerChoosePartnerTurnContainer.addEventListener("click", openChoosePartnerModal);
                 }
-                if (data.playerAction === "TRICK") {
-                    const trickInput = prompt("Your turn to play trick!");
+            }
+
+            openChoosePartnerModal = (event) => {
+                event.stopPropagation();
+                const playerChoosePartnerTurnContainer = event.currentTarget;
+
+                const partnerRect = playerChoosePartnerTurnContainer.getBoundingClientRect();
+
+                choosePartnerModal.style.top = `${partnerRect.top + window.scrollY + partnerRect.height / 2}px`;
+                choosePartnerModal.style.left = `${partnerRect.left + partnerRect.width / 2}px`;
+                choosePartnerModal.style.transform = "translate(-50%, -50%)";
+                choosePartnerModal.style.display = "block";                
+            }
+
+            sendChoosePartner = async (event) => {
+                event.preventDefault();
+                const partnerInput = document.getElementById("partner-card").value;
+                if (!partnerInput) {
+                    return;
+                }
+                let partnerResponse = await partner(partnerInput.toUpperCase());
+                if (partnerResponse && partnerResponse.code !== 0) {
+                    alert(partnerResponse?.msg);
+                }
+                choosePartnerModal.style.display = "none";
+            }
+
+            const playCardModal = document.getElementById("play-card-modal");
+            let selectedPlayingCard = null;
+
+            buildPlayCardModal = (data) => {
+                if (data.playerAction !== "TRICK") {
+                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
+                        playingCard.removeEventListener("click", openPlayCardModal);
+                    });
+                } else {
+                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
+                        playingCard.addEventListener("click", openPlayCardModal);
+                    });
+                }
+
+                const playCardBtn = document.getElementById("play-card-btn");
+
+                playCardBtn.replaceWith(playCardBtn.cloneNode(true));
+                document.getElementById("play-card-btn").addEventListener("click", async (event) => {
+                    if (data.playerAction !== "TRICK") {
+                        return;
+                    }
+                    await playCard();
+                });
+            }
+
+            openPlayCardModal = (event) => {
+                event.stopPropagation();
+                const playingCard = event.currentTarget;
+                const card = playingCard.getAttribute("cid");
+
+                selectedPlayingCard = playingCard;
+
+                const cardRect = playingCard.getBoundingClientRect();
+
+                playCardModal.style.top = `${cardRect.top + window.scrollY + cardRect.height / 2}px`;
+                playCardModal.style.left = `${cardRect.left + cardRect.width / 2}px`;
+                playCardModal.style.transform = "translate(-50%, -50%)";
+                playCardModal.style.display = "block";
+            }
+
+            playCard = async () => {
+                if (selectedPlayingCard) {
+                    const trickInput = selectedPlayingCard.getAttribute("cid");
                     let trickResponse = await trick(trickInput);
                     if (trickResponse && trickResponse.code !== 0) {
                         alert(trickResponse?.msg);
                     }
+                    playCardModal.style.display = "none";
                 }
             }
+
+            const bidModalContent = document.querySelector("#bid-modal .modal-content");
+            const choosePartnerModalContent = document.querySelector("#choose-partner-modal .modal-content");
+            const playCardModalContent = document.querySelector("#play-card-modal .modal-content");
+            window.addEventListener("click", (event) => {
+                if (!bidModalContent.contains(event.target)) {
+                    bidModal.style.display = "none";
+                }
+                if (!choosePartnerModalContent.contains(event.target)) {
+                    choosePartnerModal.style.display = "none";
+                }
+                if (!playCardModalContent.contains(event.target)) {
+                    playCardModal.style.display = "none";
+                }
+            });
 
             createGame = () => {
                 const url = `${getBridgeServiceRestUrl()}/game/create`;
@@ -469,7 +769,6 @@
                 })
                 .then(response => response.json())
                 .catch(error => {
-                    console.info(error);
                     console.error("Error:", error);
                     return error;
                 });
