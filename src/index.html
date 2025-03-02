@@ -541,7 +541,7 @@
                         scoreContainer.id = `score-${i}`;
                         scoreBoard.appendChild(scoreContainer);
                     }
-                    if (data.playerId === score.playerId) {
+                    if (data.playerTurn === score.playerId) {
                         scoreContainer.innerHTML = `<b>${score.playerId}: ${score.score}</b>`;
                     } else {
                         scoreContainer.innerHTML = `${score.playerId}: ${score.score}`;
@@ -623,7 +623,7 @@
                 if (!partnerInput) {
                     return;
                 }
-                let partnerResponse = await partner(partnerInput);
+                let partnerResponse = await partner(partnerInput.toUpperCase());
                 if (partnerResponse && partnerResponse.code !== 0) {
                     alert(partnerResponse?.msg);
                 }
