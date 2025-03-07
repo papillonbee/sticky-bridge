@@ -326,6 +326,11 @@
                         reconnectTimeout = null;
                     }
 
+                    if (window.intentionalReconnect) {
+                        window.intentionalReconnect = false;
+                        return;
+                    }
+
                     let viewAttempts = 0;
                     const maxViewAttempts = 3;
                     
