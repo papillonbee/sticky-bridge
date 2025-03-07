@@ -246,6 +246,10 @@
         </div>
         <script>
             let ws = null;
+            let reconnectAttempts = 0;
+            let maxReconnectAttempts = 5;
+            let reconnectTimeout = null;
+
             connect = async (event) => {
                 event.preventDefault();
                 let createResponse = await createGame();
@@ -276,6 +280,7 @@
                 const gameId = document.getElementById("game-id");
                 const playerId = document.getElementById("player-id");
                 ws = new WebSocket(getBridgeServiceWebSocketUrl(gameId.value, playerId.value));
+                
                 ws.onmessage = async (event) => {
                     if (isValidJson(event.data)) {
                         const data = JSON.parse(event.data);
@@ -284,6 +289,32 @@
                         addMessage(event.data);
                         event.preventDefault();
                     }
+                };
+
+                ws.onclose = (event) => {
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        const backoffDelay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+                        const seconds = backoffDelay / 1000;
+                        addMessage(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
+                        reconnectTimeout = setTimeout(() => {
+                            reconnectAttempts++;
+                            connectWebSocket();
+                        }, backoffDelay);
+                    } else {
+                        addMessage("Connection lost. Max reconnection attempts reached. Please refresh the page.");
+                    }
+                };
+
+                ws.onopen = () => {
+                    reconnectAttempts = 0;
+                    if (reconnectTimeout) {
+                        clearTimeout(reconnectTimeout);
+                        reconnectTimeout = null;
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    addMessage('WebSocket error occurred');
                 };
             }
 
