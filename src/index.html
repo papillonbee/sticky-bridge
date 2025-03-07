@@ -283,6 +283,7 @@
 
             connectWebSocket = () => {
                 if (ws) {
+                    window.intentionalClose = true;
                     ws.close();
                 }
                 const gameId = document.getElementById("game-id");
@@ -300,8 +301,8 @@
                 };
 
                 ws.onclose = (event) => {
-                    if (window.intentionalReconnect) {
-                        window.intentionalReconnect = false;
+                    if (window.intentionalClose) {
+                        window.intentionalClose = false;
                         return;
                     }
 
