@@ -252,26 +252,33 @@
 
             connect = async (event) => {
                 event.preventDefault();
-                window.intentionalReconnect = true;
-                let createResponse = await createGame();
-                if (!(createResponse && (createResponse.code === 0 || createResponse.code === 10019))) {
-                    alert(createResponse?.msg || "Failed to create game");
-                    return
-                }
-                if (createResponse.code === 10019) {
-                    let joinResponse = await joinGame();
-                    if (!(joinResponse && (joinResponse.code === 0 || joinResponse.code === 10002))) {
-                        alert(joinResponse?.msg || "Failed to join game");
+                const connectButton = event.target.querySelector("button");
+                connectButton.disabled = true;
+                
+                try {
+                    window.intentionalReconnect = true;
+                    let createResponse = await createGame();
+                    if (!(createResponse && (createResponse.code === 0 || createResponse.code === 10019))) {
+                        alert(createResponse?.msg || "Failed to connect to game");
                         return;
                     }
+                    if (createResponse.code === 10019) {
+                        let joinResponse = await joinGame();
+                        if (!(joinResponse && (joinResponse.code === 0 || joinResponse.code === 10002))) {
+                            alert(joinResponse?.msg || "Failed to connect to game");
+                            return;
+                        }
+                    }
+                    let viewResponse = await viewGame();
+                    if (!(viewResponse && viewResponse.code === 0)) {
+                        alert(viewResponse?.msg || "Failed to view game");
+                        return;
+                    }
+                    await onReceiveGameData(viewResponse.data);
+                    connectWebSocket();
+                } finally {
+                    connectButton.disabled = false;
                 }
-                let viewResponse = await viewGame();
-                if (!(viewResponse && viewResponse.code === 0)) {
-                    alert(viewResponse?.msg || "Failed to view game");
-                    return;
-                }
-                await onReceiveGameData(viewResponse.data);
-                connectWebSocket();
             }
 
             connectWebSocket = () => {
