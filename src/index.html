@@ -305,16 +305,40 @@
                     }
                 };
 
-                ws.onopen = () => {
+                ws.onopen = async () => {
                     reconnectAttempts = 0;
                     if (reconnectTimeout) {
                         clearTimeout(reconnectTimeout);
                         reconnectTimeout = null;
                     }
+
+                    let viewAttempts = 0;
+                    const maxViewAttempts = 3;
+                    
+                    while (viewAttempts < maxViewAttempts) {
+                        try {
+                            let viewResponse = await viewGame();
+                            if (viewResponse && viewResponse.code === 0) {
+                                await onReceiveGameData(viewResponse.data);
+                                return;
+                            }
+                            viewAttempts++;
+                            if (viewAttempts < maxViewAttempts) {
+                                const backoffDelay = Math.min(1000 * Math.pow(2, viewAttempts), 10000);
+                                await new Promise(resolve => setTimeout(resolve, backoffDelay));
+                            }
+                        } catch (error) {
+                            console.error("ViewGame error:", error);
+                            viewAttempts++;
+                            if (viewAttempts === maxViewAttempts) {
+                                alert("Failed to refresh game state after multiple attempts");
+                            }
+                        }
+                    }
                 };
 
                 ws.onerror = (error) => {
-                    addMessage('WebSocket error occurred');
+                    console.log(`WebSocket error occurred: ${error}`);
                 };
             }
 
