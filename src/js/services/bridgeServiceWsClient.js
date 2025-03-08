@@ -43,7 +43,6 @@ const createBridgeServiceWsClient = (config) => {
     }
 
     const handleClose = (event) => {
-        console.log("WebSocket closed:", event);
         if (intentionalClose) {
             intentionalClose = false;
             return;
@@ -62,7 +61,6 @@ const createBridgeServiceWsClient = (config) => {
     };
 
     const handleOpen = async (event) => {
-        console.log("WebSocket opened:", event);
         reconnectAttempts = 0;
         if (reconnectTimeout) {
             clearTimeout(reconnectTimeout);

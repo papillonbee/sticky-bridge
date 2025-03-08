@@ -41,6 +41,7 @@ const buildBids = (data) => {
     });
 
     if (data.playerAction === PLAYER_ACTION.BID) {
+        playerBidTurnContainer = document.getElementById(playerBidTurnContainerId);
         if (!playerBidTurnContainer) {
             playerBidTurnContainer = document.createElement("div");
             playerBidTurnContainer.id = playerBidTurnContainerId;

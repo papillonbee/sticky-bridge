@@ -106,7 +106,7 @@
                         alert(viewResponse?.msg || "Failed to view game");
                         return;
                     }
-                    await onReceiveGameData(viewResponse.data);
+                    onReceiveGameData(viewResponse.data);
                     await bridgeServiceWsClient.connect(onWsMessage, onWsReconnect, onWsMaxReconnect, onWsReopen);
                 } finally {
                     connectButton.disabled = false;
@@ -118,7 +118,7 @@
             onWsMessage = async (event) => {
                 if (isValidJson(event.data)) {
                     const data = JSON.parse(event.data);
-                    await onReceiveGameData(data);
+                    onReceiveGameData(data);
                 } else {
                     addMessage(event.data);
                     event.preventDefault();
@@ -142,7 +142,7 @@
                     try {
                         let viewResponse = await bridgeServiceApiClient.viewGame();
                         if (viewResponse && viewResponse.code === 0) {
-                            await onReceiveGameData(viewResponse.data);
+                            onReceiveGameData(viewResponse.data);
                             return;
                         }
                         viewAttempts++;
@@ -160,7 +160,7 @@
                 }
             }
 
-            onReceiveGameData = async (data) => {
+            onReceiveGameData = (data) => {
                 buildPlayerHand(data);
                 buildGameStateHistory(data);
                 buildGameStateInfo(data);
