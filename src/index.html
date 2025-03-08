@@ -2,193 +2,26 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
-        <style>
-            html, body {
-                display: flex;
-                align-items: center;
-                flex-direction: column;
-                width: 100vw;
-                overflow-x: hidden;
-            }
-            h2 {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;   
-            }
-            h2:hover {
-                transform: scale(1.1);
-            }
-            #connect-form-container form {
-                width: 90vw;
-                flex-wrap: nowrap;
-                scroll-behavior: smooth;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                column-gap: 5px;
-            }
-            #connect-form-container input {
-                width: 18vw;
-            }
-            #chat-form-container {
-                flex-wrap: nowrap;
-                scroll-behavior: smooth;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                column-gap: 5px;
-            }
-            #bid-form-container fieldset,
-            #choose-partner-form-container {
-                border: none;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                column-gap: 5px;
-                white-space: nowrap;
-            }
-            #choose-partner-form-container input {
-                width: 18vw;
-            }
-            playing-card {
-                width: 100px;
-                height: 140px;
-                margin-right: -70px;
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-            playing-card:hover {
-                transform: scale(1.1);
-            }
-            [winner-card=true] img {
-                outline: 3px solid gold;
-            }
-            #messages {
-                width: 100vw;
-                height: 9vh;
-                overflow-y: auto;
-                flex-wrap: nowrap;
-                padding: 10px;
-                scroll-behavior: smooth;
-                list-style-type: none;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            #game-state-history {
-                width: 100vw;
-                height: 140px;
-                overflow-y: auto;
-                flex-wrap: nowrap;
-                padding: 15px;
-                scroll-behavior: smooth;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            #game-state-history #bids div,
-            #game-state-history #partner div,
-            #game-state-history #tricks div {
-                width: 190px;
-            }
-            #game-state-history #bids div,
-            #game-state-history #partner div {
-                text-align: center;
-            }
-            #game-state-history #bids #player-bid-turn,
-            #game-state-history #partner #player-choose-partner-turn {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-            #game-state-history #bids #player-bid-turn:hover,
-            #game-state-history #partner #player-choose-partner-turn:hover {
-                transform: scale(1.1);
-            }
-            div[id^="player-tricks-"] {
-                padding: 5px;
-            }
-            #player-hand {
-                max-width: 70%;
-                padding-left: 15px;
-                padding-right: 85px;
-                padding-top: 15px;
-                padding-bottom: 15px;
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            #score-board {
-                width: 70vw;
-                overflow: auto;
-                flex-wrap: nowrap;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            #score-board div {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-            #score-board div:hover {
-                transform: scale(1.1);
-            }
-            div[id^="score-"] {
-                padding: 0.5vh;
-            }
-            #game-state-info {
-                position: relative;
-                display: inline-block;
-                cursor: pointer;
-                font-size: 20px;
-                color: #888;
-                padding: 5px;
-            }
-            .tooltip {
-                position: absolute;
-                bottom: 120%;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(255, 255, 255, 0.9);
-                color: #333;
-                padding: 6px 10px;
-                border-radius: 5px;
-                font-size: 12px;
-                white-space: nowrap;
-                box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-            }
-            #game-state-info:hover .tooltip {
-                opacity: 1;
-                visibility: visible;
-            }
-            .modal {
-                display: none;
-                position: absolute;
-                z-index: 1;
-            }
-            .modal-content {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-            }
-            #bid-modal .modal-content,
-            #choose-partner-modal .modal-content {
-                background-color: rgba(255, 255, 255, 1);
-                padding: 10px;
-                border: 1px solid #888;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            }
-        </style>
-        <script src="./config.js"></script>
+        <link rel="stylesheet" href="./styles/main.css">
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
+        <script src="./js/components/favicon.js"></script>
+        <script src="./js/utils//jsonUtils.js"></script>
+        <script src="./config.js"></script>
+        <script src="./js/services/bridgeServiceConfig.js"></script>
+        <script src="./js/services/bridgeServiceApiClient.js"></script>
+        <script src="./js/services/bridgeServiceWsClient.js"></script>
+        <script src="./js/constants/gameConstants.js"></script>
+        <script src="./js/components/playerHand.js"></script>
+        <script src="./js/components/gameStateHistory.js"></script>
+        <script src="./js/components/gameStateInfo.js"></script>
+        <script src="./js/components/scoreBoard.js"></script>
+        <script src="./js/utils/modalUtils.js"></script>
     </head>
     <body>
         <h2>Sticky Bridge!</h2>
         <form id="connect-form-container" action="" onsubmit="connect(event)">
-            <label>Game: <input type="text" id="game-id" autocomplete="off"/></label>
-            <label>Player: <input type="text" id="player-id" autocomplete="off"/></label>
+            <label>Game: <input type="text" id="game-id" autocomplete="off" required/></label>
+            <label>Player: <input type="text" id="player-id" autocomplete="off" required/></label>
             <button>Connect</button>
         </form>
         <ul id="messages"></ul>
@@ -245,136 +78,85 @@
             </div>
         </div>
         <script>
-            let ws = null;
-            let reconnectAttempts = 0;
-            let maxReconnectAttempts = 5;
-            let reconnectTimeout = null;
-
             connect = async (event) => {
                 event.preventDefault();
                 const connectButton = event.target.querySelector("button");
+                const gameInput = document.getElementById("game-id");
+                const playerInput = document.getElementById("player-id");
                 connectButton.disabled = true;
+                gameInput.disabled = true;
+                playerInput.disabled = true;
                 
                 try {
-                    window.intentionalReconnect = true;
-                    let createResponse = await createGame();
+                    bridgeServiceWsClient.setIntentionalReconnect(true);
+                    let createResponse = await bridgeServiceApiClient.createGame();
                     if (!(createResponse && (createResponse.code === 0 || createResponse.code === 10019))) {
                         alert(createResponse?.msg || "Failed to connect to game");
                         return;
                     }
                     if (createResponse.code === 10019) {
-                        let joinResponse = await joinGame();
+                        let joinResponse = await bridgeServiceApiClient.joinGame();
                         if (!(joinResponse && (joinResponse.code === 0 || joinResponse.code === 10002))) {
                             alert(joinResponse?.msg || "Failed to connect to game");
                             return;
                         }
                     }
-                    let viewResponse = await viewGame();
+                    let viewResponse = await bridgeServiceApiClient.viewGame();
                     if (!(viewResponse && viewResponse.code === 0)) {
                         alert(viewResponse?.msg || "Failed to view game");
                         return;
                     }
                     await onReceiveGameData(viewResponse.data);
-                    connectWebSocket();
+                    await bridgeServiceWsClient.connect(onWsMessage, onWsReconnect, onWsMaxReconnect, onWsReopen);
                 } finally {
                     connectButton.disabled = false;
+                    gameInput.disabled = false;
+                    playerInput.disabled = false;
                 }
             }
 
-            connectWebSocket = () => {
-                if (ws) {
-                    window.intentionalClose = true;
-                    ws.close();
+            onWsMessage = async (event) => {
+                if (isValidJson(event.data)) {
+                    const data = JSON.parse(event.data);
+                    await onReceiveGameData(data);
+                } else {
+                    addMessage(event.data);
+                    event.preventDefault();
                 }
-                const gameId = document.getElementById("game-id");
-                const playerId = document.getElementById("player-id");
-                ws = new WebSocket(getBridgeServiceWebSocketUrl(gameId.value, playerId.value));
+            }
+
+            onWsReconnect = (event, backoffDelay) => {
+                const seconds = backoffDelay / 1000;
+                addMessage(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
+            }
+
+            onWsMaxReconnect = (event) => {
+                addMessage("Connection lost. Max reconnection attempts reached. Please refresh the page.");
+            }
+
+            onWsReopen = async (event) => {
+                let viewAttempts = 0;
+                const maxViewAttempts = 3;
                 
-                ws.onmessage = async (event) => {
-                    if (isValidJson(event.data)) {
-                        const data = JSON.parse(event.data);
-                        await onReceiveGameData(data);
-                    } else {
-                        addMessage(event.data);
-                        event.preventDefault();
-                    }
-                };
-
-                ws.onclose = (event) => {
-                    if (window.intentionalClose) {
-                        window.intentionalClose = false;
-                        return;
-                    }
-
-                    if (reconnectAttempts < maxReconnectAttempts) {
-                        const backoffDelay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-                        const seconds = backoffDelay / 1000;
-                        addMessage(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
-                        reconnectTimeout = setTimeout(() => {
-                            reconnectAttempts++;
-                            connectWebSocket();
-                        }, backoffDelay);
-                    } else {
-                        addMessage("Connection lost. Max reconnection attempts reached. Please refresh the page.");
-                    }
-                };
-
-                ws.onopen = async () => {
-                    reconnectAttempts = 0;
-                    if (reconnectTimeout) {
-                        clearTimeout(reconnectTimeout);
-                        reconnectTimeout = null;
-                    }
-
-                    if (window.intentionalReconnect) {
-                        window.intentionalReconnect = false;
-                        return;
-                    }
-
-                    let viewAttempts = 0;
-                    const maxViewAttempts = 3;
-                    
-                    while (viewAttempts < maxViewAttempts) {
-                        try {
-                            let viewResponse = await viewGame();
-                            if (viewResponse && viewResponse.code === 0) {
-                                await onReceiveGameData(viewResponse.data);
-                                return;
-                            }
-                            viewAttempts++;
-                            if (viewAttempts < maxViewAttempts) {
-                                const backoffDelay = Math.min(1000 * Math.pow(2, viewAttempts), 10000);
-                                await new Promise(resolve => setTimeout(resolve, backoffDelay));
-                            }
-                        } catch (error) {
-                            console.error("ViewGame error:", error);
-                            viewAttempts++;
-                            if (viewAttempts === maxViewAttempts) {
-                                alert("Failed to refresh game state after multiple attempts");
-                            }
+                while (viewAttempts < maxViewAttempts) {
+                    try {
+                        let viewResponse = await bridgeServiceApiClient.viewGame();
+                        if (viewResponse && viewResponse.code === 0) {
+                            await onReceiveGameData(viewResponse.data);
+                            return;
+                        }
+                        viewAttempts++;
+                        if (viewAttempts < maxViewAttempts) {
+                            const backoffDelay = Math.min(1000 * Math.pow(2, viewAttempts), 10000);
+                            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+                        }
+                    } catch (error) {
+                        console.error("ViewGame error:", error);
+                        viewAttempts++;
+                        if (viewAttempts === maxViewAttempts) {
+                            alert("Failed to refresh game state after multiple attempts");
                         }
                     }
-                };
-
-                ws.onerror = (error) => {
-                    console.log(`WebSocket error occurred: ${error}`);
-                };
-            }
-
-            getBridgeServiceWebSocketUrl = (gameId, playerId) => {
-                return `${getWebSocketProtocol()}://${getBridgeServiceUrl()}/ws/${gameId}/${playerId}`;
-            }
-
-            getWebSocketProtocol = () => {
-                return window.CONFIG.BRIDGE_SERVICE_WEB_SOCKET_PROTOCOL;
-            }
-
-            isValidJson = (jsonString) => {
-                try {
-                    JSON.parse(jsonString);
-                    return true;
-                } catch (e) {
-                    return false;
                 }
             }
 
@@ -398,257 +180,27 @@
 
             sendMessage = (event) => {
                 event.preventDefault();
-                if (!ws) {
+                if (!bridgeServiceWsClient.connected()) {
                     alert("Not connected to game");
                     return;
                 }
                 const input = document.getElementById("messageText");
-                ws.send(input.value);
+                bridgeServiceWsClient.send(input.value);
                 input.value = "";
-            }
-
-            buildPlayerHand = (data) => {
-                const cardIds = data.playerHand;
-                const playerHandContainer = document.getElementById("player-hand");
-                cardIds.forEach((cardId, i) => {
-                    let existingCard = Array.from(playerHandContainer.children).find(card => card.getAttribute("cid") === cardId);
-                    if (!existingCard) {
-                        let newCard = document.createElement("playing-card");
-                        newCard.setAttribute("cid", cardId);
-                        newCard.setAttribute("cardcolor", "rgb(221, 213, 213)");
-                        if (i < playerHandContainer.children.length) {
-                            playerHandContainer.insertBefore(newCard, playerHandContainer.children[i]);
-                        } else {
-                            playerHandContainer.appendChild(newCard);
-                        }
-                    }
-                });
-                Array.from(playerHandContainer.children).forEach(playerCard => {
-                    const cardId = playerCard.getAttribute("cid");
-                    if (!cardIds.includes(cardId)) {
-                        playerHandContainer.removeChild(playerCard);
-                    }
-                });
-            }
-
-            buildGameStateHistory = (data) => {
-                buildBids(data);
-                buildPartner(data);
-                buildTricks(data);
-                const gameStateHistoryContainer = document.getElementById("game-state-history");
-                requestAnimationFrame(() => {
-                    gameStateHistoryContainer.scrollTop = gameStateHistoryContainer.scrollHeight;
-                });
-            }
-
-            buildBids = (data) => {
-                const bids = data.bids;
-                const bidsContainer = document.getElementById("bids");
-                
-                const playerBidTurnContainerId = `player-bid-turn`;
-                let playerBidTurnContainer = document.getElementById(playerBidTurnContainerId);
-                if (data.playerAction !== "BID") {
-                    if (playerBidTurnContainer) {
-                        bidsContainer.removeChild(playerBidTurnContainer);
-                    }
-                }
-
-                bids.forEach((bid, i) => {
-                    const bidContainerId = `bid-${i}`;
-                    let bidContainer = Array.from(bidsContainer.children).find(bidContainer => bidContainer.id === bidContainerId);
-                    if (!bidContainer) {
-                        bidContainer = document.createElement("div");
-                        bidContainer.id = bidContainerId;
-                        bidsContainer.appendChild(bidContainer);
-                    }
-                    if (bid.bid) {
-                        bidContainer.innerHTML = `${bid.playerId} bids ${bid.bid}`;
-                    } else {
-                        bidContainer.innerHTML = `${bid.playerId} passes`;
-                    }
-                });
-                Array.from(bidsContainer.children).forEach((bidContainer, i) => {
-                    if (i >= bids.length) {
-                        bidsContainer.removeChild(bidContainer);
-                    }
-                });
-
-                if (data.playerAction === "BID") {
-                    if (!playerBidTurnContainer) {
-                        playerBidTurnContainer = document.createElement("div");
-                        playerBidTurnContainer.id = playerBidTurnContainerId;
-                        bidsContainer.appendChild(playerBidTurnContainer);
-                    }
-                    playerBidTurnContainer.innerHTML = `<b>Your turn to bid!</b>`;
-                }
-            }
-
-            buildPartner = (data) => {
-                const partner = data.partner;
-                const partnerContainer = document.getElementById("partner");
-                if (partner) {
-                    const chosenPartnerContainerId = `chosen-partner`;
-                    let chosenPartnerContainer = Array.from(partnerContainer.children).find(child => child.id === chosenPartnerContainerId);
-                    if (!chosenPartnerContainer) {
-                        chosenPartnerContainer = document.createElement("div");
-                        chosenPartnerContainer.id = chosenPartnerContainerId;
-                        partnerContainer.appendChild(chosenPartnerContainer);
-                    }
-                    chosenPartnerContainer.innerHTML = `${data.bidWinner} chooses ${partner}`;
-                }
-                Array.from(partnerContainer.children).forEach(child => {
-                    if (!partner) {
-                        partnerContainer.removeChild(child);
-                    }
-                });
-
-                buildPlayerChoosePartnerTurn(data);
-            }
-
-            buildPlayerChoosePartnerTurn = (data) => {
-                const partnerContainer = document.getElementById("partner");
-                const playerChoosePartnerTurnContainerId = `player-choose-partner-turn`;
-                let playerChoosePartnerTurnContainer = document.getElementById(playerChoosePartnerTurnContainerId);
-                if (data.playerAction === "CHOOSE_PARTNER") {
-                    if (!playerChoosePartnerTurnContainer) {
-                        playerChoosePartnerTurnContainer = document.createElement("div");
-                        playerChoosePartnerTurnContainer.id = playerChoosePartnerTurnContainerId;
-                        partnerContainer.appendChild(playerChoosePartnerTurnContainer);
-                    }
-                    playerChoosePartnerTurnContainer.innerHTML = `<b>Your turn to choose partner!</b>`;
-                } else {
-                    if (playerChoosePartnerTurnContainer) {
-                        partnerContainer.removeChild(playerChoosePartnerTurnContainer);
-                    }
-                }
-            }
-
-            buildTricks = (data) => {
-                const tricks = data.tricks;
-                const tricksContainer = document.getElementById("tricks");
-                tricks.forEach((trick, i) => {
-                    const playerTricksContainerId = `player-tricks-${i}`;
-                    let playerTricksContainer = Array.from(tricksContainer.children).find(playerTricksContainer => playerTricksContainer.id === playerTricksContainerId);
-                    if (!playerTricksContainer) {
-                        playerTricksContainer = document.createElement("div");
-                        playerTricksContainer.id = playerTricksContainerId;
-                        tricksContainer.appendChild(playerTricksContainer);
-                    }
-                    buildPlayerTricks(playerTricksContainer, trick.playerTricks);
-                });
-                Array.from(tricksContainer.children).forEach((playerTricksContainer, i) => {
-                    if (i >= tricks.length) {
-                        tricksContainer.removeChild(playerTricksContainer);
-                    }
-                });
-            }
-
-            buildPlayerTricks = (playerTricksContainer, playerTricks) => {
-                playerTricks.forEach((playerTrick, j) => {
-                    const playerId = document.getElementById("player-id");
-                    let playerCard = Array.from(playerTricksContainer.children).find(card => card.getAttribute("cid") === playerTrick.trick);
-                    if (!playerCard) {
-                        playerCard = document.createElement("playing-card");
-                        playerCard.setAttribute("cid", playerTrick.trick);
-
-                        if (playerTrick.playerId === playerId.value) {
-                            playerCard.setAttribute("cardcolor", "rgb(221, 213, 213)");
-                        }
-
-                        if (j < playerTricksContainer.children.length) {
-                            playerTricksContainer.insertBefore(playerCard, playerTricksContainer.children[j]);
-                        } else {
-                            playerTricksContainer.appendChild(playerCard);
-                        }
-                    } else {
-                        if (!playerCard.getAttribute("cardcolor") && playerTrick.playerId === playerId.value) {
-                            playerTricksContainer.removeChild(playerCard);
-                            playerCard = document.createElement("playing-card");
-                            playerCard.setAttribute("cid", playerTrick.trick);
-                            playerCard.setAttribute("cardcolor", "rgb(221, 213, 213)");
-                        }
-                        if (playerCard.getAttribute("cardcolor") && playerTrick.playerId !== playerId.value) {
-                            playerTricksContainer.removeChild(playerCard);
-                            playerCard = document.createElement("playing-card");
-                            playerCard.setAttribute("cid", playerTrick.trick);
-                        }
-                        if (j < playerTricksContainer.children.length) {
-                            playerTricksContainer.insertBefore(playerCard, playerTricksContainer.children[j]);
-                        } else {
-                            playerTricksContainer.appendChild(playerCard);
-                        }
-                    }
-                    playerCard.setAttribute("winner-card", playerTrick.win);
-                })
-                Array.from(playerTricksContainer.children).forEach(playerCard => {
-                    const cardId = playerCard.getAttribute("cid");
-                    if (!playerTricks.map(playerTrick => playerTrick.trick).includes(cardId)) {
-                        playerTricksContainer.removeChild(playerCard);
-                    }
-                });
-            }
-
-            buildGameStateInfo = (data) => {
-                const gameStateInfo = document.getElementById("game-state-info");
-                const tooltip = gameStateInfo.querySelector(".tooltip");
-                if (!data.bidWinner) {
-                    tooltip.innerHTML = "No bid winner yet!";
-                    return;
-                }
-                let text = `${data.bidWinner} won the bid with ${data.bidLevel}`;
-                if (data.trumpSuit) {
-                    text += `${data.trumpSuit}`;
-                } else {
-                    text += ` no trump`;
-                }
-                if (!data.partner) {
-                    tooltip.innerHTML = text;
-                    return;
-                }
-                text += `<br>and called partner ${data.partner}`;
-                tooltip.innerHTML = text;
-            }
-
-            buildScoreBoard = (data) => {
-                const scoreBoard = document.getElementById("score-board");
-                data.scores.forEach((score, i) => {
-                    const scoreContainerId = `score-${i}`;
-                    let scoreContainer = document.getElementById(scoreContainerId);
-                    if (!scoreContainer) {
-                        scoreContainer = document.createElement("div");
-                        scoreContainer.id = `score-${i}`;
-                        scoreBoard.appendChild(scoreContainer);
-                    }
-                    if (data.playerTurn === score.playerId) {
-                        scoreContainer.innerHTML = `<b>${score.playerId}: ${score.score}</b>`;
-                    } else {
-                        scoreContainer.innerHTML = `${score.playerId}: ${score.score}`;
-                    }
-                })
-                for (let i = scoreBoard.children.length - 1; i >= data.scores.length; i--) {
-                    scoreBoard.removeChild(scoreBoard.children[i]);
-                }
             }
 
             const bidModal = document.getElementById("bid-modal");
 
             buildBidModal = (data) => {
                 const playerBidTurnContainer = document.getElementById("player-bid-turn");
-                if (data.playerAction === "BID") {
+                if (data.playerAction === PLAYER_ACTION.BID) {
                     playerBidTurnContainer.addEventListener("click", openBidModal);
                 }
             }
 
             openBidModal = (event) => {
                 event.stopPropagation();
-                const playerBidTurnContainer = event.currentTarget;
-
-                const bidRect = playerBidTurnContainer.getBoundingClientRect();
-
-                bidModal.style.top = `${bidRect.top + window.scrollY + bidRect.height / 2}px`;
-                bidModal.style.left = `${bidRect.left + bidRect.width / 2}px`;
-                bidModal.style.transform = "translate(-50%, -50%)";
-                bidModal.style.display = "block";
+                openModal(bidModal, event.currentTarget);
             }
 
             sendBid = async (event) => {
@@ -664,12 +216,12 @@
                     bidInput = `${selectedBidLevel.value}${selectedBidSuit.value}`;
                 }
                 if (clickedButton === "pass") {
-                    bidInput = "P";
+                    bidInput = BID.PASS;
                 }
                 
-                let bidResponse = await bid(bidInput);
+                let bidResponse = await bridgeServiceApiClient.bid(bidInput);
                 if (bidResponse && bidResponse.code !== 0) {
-                    alert(bidResponse?.msg);
+                    alert(bidResponse?.msg  || "Failed to connect to game");
                 }
                 bidModal.style.display = "none";
             }
@@ -678,21 +230,14 @@
 
             buildChoosePartnerModal = (data) => {
                 const playerChoosePartnerTurnContainer = document.getElementById("player-choose-partner-turn");
-                if (data.playerAction === "CHOOSE_PARTNER") {
+                if (data.playerAction === PLAYER_ACTION.CHOOSE_PARTNER) {
                     playerChoosePartnerTurnContainer.addEventListener("click", openChoosePartnerModal);
                 }
             }
 
             openChoosePartnerModal = (event) => {
                 event.stopPropagation();
-                const playerChoosePartnerTurnContainer = event.currentTarget;
-
-                const partnerRect = playerChoosePartnerTurnContainer.getBoundingClientRect();
-
-                choosePartnerModal.style.top = `${partnerRect.top + window.scrollY + partnerRect.height / 2}px`;
-                choosePartnerModal.style.left = `${partnerRect.left + partnerRect.width / 2}px`;
-                choosePartnerModal.style.transform = "translate(-50%, -50%)";
-                choosePartnerModal.style.display = "block";                
+                openModal(choosePartnerModal, event.currentTarget);
             }
 
             sendChoosePartner = async (event) => {
@@ -701,9 +246,9 @@
                 if (!partnerInput) {
                     return;
                 }
-                let partnerResponse = await partner(partnerInput.toUpperCase());
+                let partnerResponse = await bridgeServiceApiClient.partner(partnerInput.toUpperCase());
                 if (partnerResponse && partnerResponse.code !== 0) {
-                    alert(partnerResponse?.msg);
+                    alert(partnerResponse?.msg  || "Failed to connect to game");
                 }
                 choosePartnerModal.style.display = "none";
             }
@@ -712,7 +257,7 @@
             let selectedPlayingCard = null;
 
             buildPlayCardModal = (data) => {
-                if (data.playerAction !== "TRICK") {
+                if (data.playerAction !== PLAYER_ACTION.TRICK) {
                     Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
                         playingCard.removeEventListener("click", openPlayCardModal);
                     });
@@ -726,7 +271,7 @@
 
                 playCardBtn.replaceWith(playCardBtn.cloneNode(true));
                 document.getElementById("play-card-btn").addEventListener("click", async (event) => {
-                    if (data.playerAction !== "TRICK") {
+                    if (data.playerAction !== PLAYER_ACTION.TRICK) {
                         return;
                     }
                     await playCard();
@@ -736,155 +281,20 @@
             openPlayCardModal = (event) => {
                 event.stopPropagation();
                 const playingCard = event.currentTarget;
-                const card = playingCard.getAttribute("cid");
-
                 selectedPlayingCard = playingCard;
-
-                const cardRect = playingCard.getBoundingClientRect();
-
-                playCardModal.style.top = `${cardRect.top + window.scrollY + cardRect.height / 2}px`;
-                playCardModal.style.left = `${cardRect.left + cardRect.width / 2}px`;
-                playCardModal.style.transform = "translate(-50%, -50%)";
-                playCardModal.style.display = "block";
+                openModal(playCardModal, playingCard);
             }
 
             playCard = async () => {
                 if (selectedPlayingCard) {
                     const trickInput = selectedPlayingCard.getAttribute("cid");
-                    let trickResponse = await trick(trickInput);
+                    let trickResponse = await bridgeServiceApiClient.trick(trickInput);
                     if (trickResponse && trickResponse.code !== 0) {
-                        alert(trickResponse?.msg);
+                        alert(trickResponse?.msg  || "Failed to connect to game");
                     }
                     playCardModal.style.display = "none";
                 }
             }
-
-            const bidModalContent = document.querySelector("#bid-modal .modal-content");
-            const choosePartnerModalContent = document.querySelector("#choose-partner-modal .modal-content");
-            const playCardModalContent = document.querySelector("#play-card-modal .modal-content");
-            window.addEventListener("click", (event) => {
-                if (!bidModalContent.contains(event.target)) {
-                    bidModal.style.display = "none";
-                }
-                if (!choosePartnerModalContent.contains(event.target)) {
-                    choosePartnerModal.style.display = "none";
-                }
-                if (!playCardModalContent.contains(event.target)) {
-                    playCardModal.style.display = "none";
-                }
-            });
-
-            createGame = () => {
-                const url = `${getBridgeServiceRestUrl()}/game/create`;
-                const data = buildBridgeServiceRequest();
-                return requestBridgeService(url, data);
-            }
-
-            joinGame = () => {
-                const url = `${getBridgeServiceRestUrl()}/game/join`;
-                const data = buildBridgeServiceRequest();
-                return requestBridgeService(url, data);
-            }
-
-            viewGame = () => {
-                const url = `${getBridgeServiceRestUrl()}/game/view`;
-                const data = buildBridgeServiceRequest();
-                return requestBridgeService(url, data);
-            }
-
-            bid = (bid) => {
-                const url = `${getBridgeServiceRestUrl()}/game/bid`;
-                const data = buildBridgeServiceRequest();
-                data.bid = bid;
-                return requestBridgeService(url, data);
-            }
-
-            partner = (partner) => {
-                const url = `${getBridgeServiceRestUrl()}/game/partner`;
-                const data = buildBridgeServiceRequest();
-                data.partner = partner;
-                return requestBridgeService(url, data);
-            }
-
-            trick = (trick) => {
-                const url = `${getBridgeServiceRestUrl()}/game/trick`;
-                const data = buildBridgeServiceRequest();
-                data.trick = trick;
-                return requestBridgeService(url, data);
-            }
-
-            getBridgeServiceRestUrl = () => {
-                return `${getRestProtocol()}://${getBridgeServiceUrl()}`;
-            }
-
-            getRestProtocol = () => {
-                return window.CONFIG.BRIDGE_SERVICE_REST_PROTOCOL;
-            }
-
-            getBridgeServiceUrl = () => {
-                return window.CONFIG.BRIDGE_SERVICE_URL;
-            }
-
-            buildBridgeServiceRequest = () => {
-                const gameId = document.getElementById("game-id").value;
-                const playerId = document.getElementById("player-id").value;
-                if (!gameId || !playerId) {
-                    return undefined;
-                }
-                return {"gameId": gameId, "playerId": playerId};
-            }
-
-            requestBridgeService = (url, data) => {
-                if (!data) {
-                    return;
-                }
-                return fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .catch(error => {
-                    console.error("Error:", error);
-                    return error;
-                });
-            }
-
-            createFaviconPlayingCard = () => {
-                const hiddenContainer = document.createElement("div");
-                hiddenContainer.style.display = "none";
-                document.body.appendChild(hiddenContainer);
-
-                const card = document.createElement("playing-card");
-                card.setAttribute("rank", "0");
-                card.setAttribute("rank", "0");
-                card.setAttribute("backcolor", "#44F");
-                card.setAttribute("backtext", "");
-                card.setAttribute("backtextcolor", "black");
-
-                hiddenContainer.appendChild(card);
-                
-                setTimeout(() => setFaviconFromPlayingCard(card), 1000);
-            }
-
-            setFaviconFromPlayingCard = (card) => {
-                const image = card.querySelector("img");
-                const svgSrc = image.getAttribute("src");
-                if (svgSrc && svgSrc.startsWith("data:image/svg+xml")) {
-                    let favicon = document.querySelector("link[rel='icon']");
-                    if (!favicon) {
-                        favicon = document.createElement("link");
-                        favicon.rel = "icon";
-                        document.head.appendChild(favicon);
-                    }
-                    favicon.href = svgSrc;
-                    document.head.appendChild(favicon);
-                }
-            }
-
-            document.addEventListener("DOMContentLoaded", createFaviconPlayingCard);
         </script>
     </body>
 </html>
