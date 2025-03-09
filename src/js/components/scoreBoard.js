@@ -9,9 +9,9 @@ const buildScoreBoard = (data) => {
             scoreBoard.appendChild(scoreContainer);
         }
         if (data.playerTurn === score.playerId) {
-            scoreContainer.innerHTML = `<b>${score.playerId}: ${score.score}</b>`;
+            scoreContainer.innerHTML = `<b>${score.won ? "🎉 " : ""}${score.playerId}: ${score.score}</b>`;
         } else {
-            scoreContainer.innerHTML = `${score.playerId}: ${score.score}`;
+            scoreContainer.innerHTML = `${score.won ? "🎉 " : ""}${score.playerId}: ${score.score}`;
         }
     })
     for (let i = scoreBoard.children.length - 1; i >= data.scores.length; i--) {
