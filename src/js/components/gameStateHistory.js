@@ -155,5 +155,3 @@ const buildPlayerTricks = (playerTricksContainer, playerTricks) => {
         }
     });
 }
-
-window.buildGameStateHistory = buildGameStateHistory;

@@ -6,5 +6,3 @@ const isValidJson = (jsonString) => {
         return false;
     }
 }
-
-window.isValidJson = isValidJson;

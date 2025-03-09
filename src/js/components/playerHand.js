@@ -21,5 +21,3 @@ const buildPlayerHand = (data) => {
         }
     });
 };
-
-window.buildPlayerHand = buildPlayerHand;

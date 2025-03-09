@@ -7,5 +7,3 @@ const PLAYER_ACTION = {
 const BID = {
     PASS: "P",
 }
-
-window.PLAYER_ACTION = PLAYER_ACTION;

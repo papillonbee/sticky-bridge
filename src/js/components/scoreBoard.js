@@ -18,5 +18,3 @@ const buildScoreBoard = (data) => {
         scoreBoard.removeChild(scoreBoard.children[i]);
     }
 }
-
-window.buildScoreBoard = buildScoreBoard;

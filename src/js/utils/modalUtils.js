@@ -24,5 +24,4 @@ const setupModalOutsideClick = () => {
     });
 };
 
-window.openModal = openModal;
 document.addEventListener("DOMContentLoaded", setupModalOutsideClick);
