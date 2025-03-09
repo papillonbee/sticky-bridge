@@ -18,5 +18,3 @@ const buildGameStateInfo = (data) => {
     text += `<br>and called partner ${data.partner}`;
     tooltip.innerHTML = text;
 }
-
-window.buildGameStateInfo = buildGameStateInfo;
