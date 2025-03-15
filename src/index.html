@@ -193,7 +193,7 @@
 
             buildBidModal = (data) => {
                 const playerBidTurnContainer = document.getElementById("player-bid-turn");
-                if (data.playerAction === PLAYER_ACTION.BID) {
+                if (data.playerActions.includes(PLAYER_ACTION.BID)) {
                     playerBidTurnContainer.addEventListener("click", openBidModal);
                 }
             }
@@ -230,7 +230,7 @@
 
             buildChoosePartnerModal = (data) => {
                 const playerChoosePartnerTurnContainer = document.getElementById("player-choose-partner-turn");
-                if (data.playerAction === PLAYER_ACTION.CHOOSE_PARTNER) {
+                if (data.playerActions.includes(PLAYER_ACTION.CHOOSE_PARTNER)) {
                     playerChoosePartnerTurnContainer.addEventListener("click", openChoosePartnerModal);
                 }
             }
@@ -257,7 +257,7 @@
             let selectedPlayingCard = null;
 
             buildPlayCardModal = (data) => {
-                if (data.playerAction !== PLAYER_ACTION.TRICK) {
+                if (!data.playerActions.includes(PLAYER_ACTION.TRICK)) {
                     Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
                         playingCard.removeEventListener("click", openPlayCardModal);
                     });
@@ -271,7 +271,7 @@
 
                 playCardBtn.replaceWith(playCardBtn.cloneNode(true));
                 document.getElementById("play-card-btn").addEventListener("click", async (event) => {
-                    if (data.playerAction !== PLAYER_ACTION.TRICK) {
+                    if (!data.playerActions.includes(PLAYER_ACTION.TRICK)) {
                         return;
                     }
                     await playCard();
