@@ -95,6 +95,20 @@ playing-card:hover {
 #game-state-history #partner #player-choose-partner-turn:hover {
     transform: scale(1.1);
 }
+#game-state-history #tricks playing-card::after {
+    content: attr(player-id);
+    position: absolute;
+    bottom: 87%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+#game-state-history #tricks playing-card:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
 div[id^="player-tricks-"] {
     padding: 5px;
 }
@@ -151,7 +165,7 @@ div[id^="score-"] {
     visibility: hidden;
     transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
-#game-state-info:hover .tooltip {
+#game-state-info.active .tooltip {
     opacity: 1;
     visibility: visible;
 }

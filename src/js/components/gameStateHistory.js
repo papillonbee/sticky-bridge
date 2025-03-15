@@ -14,7 +14,7 @@ const buildBids = (data) => {
     
     const playerBidTurnContainerId = `player-bid-turn`;
     let playerBidTurnContainer = document.getElementById(playerBidTurnContainerId);
-    if (data.playerAction !== PLAYER_ACTION.BID) {
+    if (!data.playerActions.includes(PLAYER_ACTION.BID)) {
         if (playerBidTurnContainer) {
             bidsContainer.removeChild(playerBidTurnContainer);
         }
@@ -40,7 +40,7 @@ const buildBids = (data) => {
         }
     });
 
-    if (data.playerAction === PLAYER_ACTION.BID) {
+    if (data.playerActions.includes(PLAYER_ACTION.BID)) {
         playerBidTurnContainer = document.getElementById(playerBidTurnContainerId);
         if (!playerBidTurnContainer) {
             playerBidTurnContainer = document.createElement("div");
@@ -77,7 +77,7 @@ const buildPlayerChoosePartnerTurn = (data) => {
     const partnerContainer = document.getElementById("partner");
     const playerChoosePartnerTurnContainerId = `player-choose-partner-turn`;
     let playerChoosePartnerTurnContainer = document.getElementById(playerChoosePartnerTurnContainerId);
-    if (data.playerAction === PLAYER_ACTION.CHOOSE_PARTNER) {
+    if (data.playerActions.includes(PLAYER_ACTION.CHOOSE_PARTNER)) {
         if (!playerChoosePartnerTurnContainer) {
             playerChoosePartnerTurnContainer = document.createElement("div");
             playerChoosePartnerTurnContainer.id = playerChoosePartnerTurnContainerId;
@@ -147,6 +147,7 @@ const buildPlayerTricks = (playerTricksContainer, playerTricks) => {
             }
         }
         playerCard.setAttribute("winner-card", playerTrick.won);
+        playerCard.setAttribute("player-id", playerTrick.playerId);
     })
     Array.from(playerTricksContainer.children).forEach(playerCard => {
         const cardId = playerCard.getAttribute("cid");

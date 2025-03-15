@@ -18,3 +18,23 @@ const buildGameStateInfo = (data) => {
     text += `<br>and called partner ${data.partner}`;
     tooltip.innerHTML = text;
 }
+
+const setupGameStateInfoClick = () => {
+    const gameStateInfo = document.getElementById("game-state-info");
+    gameStateInfo.addEventListener("click", (event) => {
+        event.target.classList.toggle("active");
+        event.stopPropagation();
+    });
+}
+
+const setupGameStateInfoOutsideClick = () => {
+    const gameStateInfo = document.getElementById("game-state-info");
+    document.addEventListener("click", () => {
+        gameStateInfo.classList.remove("active");
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    setupGameStateInfoClick();
+    setupGameStateInfoOutsideClick();
+});
