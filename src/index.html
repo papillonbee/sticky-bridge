@@ -77,6 +77,13 @@
                 <button id="play-card-btn">Play</button>
             </div>
         </div>
+        <div id="next-game-modal" class="modal">
+            <div class="modal-content">
+                <form id="next-game-form-container" action="" onsubmit="sendNextGame(event)">
+                    <button>Next game</button>
+                </form>
+            </div>
+        </div>
         <script>
             connect = async (event) => {
                 event.preventDefault();
@@ -168,6 +175,7 @@
                 buildBidModal(data);
                 buildChoosePartnerModal(data);
                 buildPlayCardModal(data);
+                buildNextGameModal(data);
             }
 
             addMessage = (text) => {
@@ -294,6 +302,31 @@
                     }
                     playCardModal.style.display = "none";
                 }
+            }
+
+            const nextGameModal = document.getElementById("next-game-modal");
+
+            buildNextGameModal = (data) => {
+                const playerResetGameContainer = document.querySelector("#score-board .player-reset-game");
+                if (data.playerActions.includes(PLAYER_ACTION.RESET)) {
+                    playerResetGameContainer.addEventListener("click", openNextGameModal);
+                } else {
+                    playerResetGameContainer.removeEventListener("click", openNextGameModal);
+                }
+            }
+
+            openNextGameModal = async (event) => {
+                event.stopPropagation();
+                openModal(nextGameModal, event.currentTarget);
+            }
+
+            sendNextGame = async () => {
+                event.preventDefault();
+                let resetResponse = await bridgeServiceApiClient.resetGame();
+                if (resetResponse && resetResponse.code!== 0) {
+                    alert(resetResponse?.msg  || "Failed to connect to game");
+                }
+                nextGameModal.style.display = "none";
             }
         </script>
     </body>
