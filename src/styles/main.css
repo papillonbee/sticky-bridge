@@ -165,7 +165,7 @@ div[id^="score-"] {
     visibility: hidden;
     transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
-#game-state-info:hover .tooltip {
+#game-state-info.active .tooltip {
     opacity: 1;
     visibility: visible;
 }
