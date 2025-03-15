@@ -80,7 +80,7 @@
         <div id="next-game-modal" class="modal">
             <div class="modal-content">
                 <form id="next-game-form-container" action="" onsubmit="sendNextGame(event)">
-                    <button>Next game</button>
+                    <button>Next<br>game</button>
                 </form>
             </div>
         </div>
@@ -308,11 +308,15 @@
 
             buildNextGameModal = (data) => {
                 const playerResetGameContainer = document.querySelector("#score-board .player-reset-game");
-                if (data.playerActions.includes(PLAYER_ACTION.RESET)) {
-                    playerResetGameContainer.addEventListener("click", openNextGameModal);
-                } else {
-                    playerResetGameContainer.removeEventListener("click", openNextGameModal);
-                }
+                const scoreBoard = document.getElementById("score-board");
+                Array.from(scoreBoard.children).forEach(scoreContainer => {
+                    if (scoreContainer.classList.contains("player-reset-game")
+                        && data.playerActions.includes(PLAYER_ACTION.RESET)) {
+                        scoreContainer.addEventListener("click", openNextGameModal);
+                    } else {
+                        scoreContainer.removeEventListener("click", openNextGameModal);    
+                    }
+                });
             }
 
             openNextGameModal = async (event) => {
@@ -320,7 +324,7 @@
                 openModal(nextGameModal, event.currentTarget);
             }
 
-            sendNextGame = async () => {
+            sendNextGame = async (event) => {
                 event.preventDefault();
                 let resetResponse = await bridgeServiceApiClient.resetGame();
                 if (resetResponse && resetResponse.code!== 0) {
