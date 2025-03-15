@@ -147,6 +147,7 @@ const buildPlayerTricks = (playerTricksContainer, playerTricks) => {
             }
         }
         playerCard.setAttribute("winner-card", playerTrick.won);
+        playerCard.setAttribute("player-id", playerTrick.playerId);
     })
     Array.from(playerTricksContainer.children).forEach(playerCard => {
         const cardId = playerCard.getAttribute("cid");
