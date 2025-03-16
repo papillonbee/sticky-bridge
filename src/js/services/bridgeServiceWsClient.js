@@ -99,10 +99,11 @@ const createBridgeServiceWsClient = (config) => {
     };
 
     const checkConnection = () => {
-        if (!ws) return;
+        if (!connected()) return;
         if (Date.now() - lastPingTime > pingTimeout) {
             console.log("missed pings, reconnecting...");
-            ws.close(); 
+            intentionalClose = false;
+            ws.close();
         }
     }
 
