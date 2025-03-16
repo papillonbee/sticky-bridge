@@ -17,7 +17,7 @@ Example of generating an Ace of Spades SVG
 </body>
 ```
 
-2. [`bridge-service`](https://github.com/papillonbee/bridge-service), a backend service for playing floating bridge. Players visit [`sticky-bridge`](https://papillonbee.github.io/sticky-bridge/) then create game, join game, bid, choose partner, and play trick through `bridge-service` REST API, and view latest game state change, and chat through `bridge-service` WebSocket
+2. [`bridge-service`](https://github.com/papillonbee/bridge-service), a backend service for playing floating bridge. Players visit [`sticky-bridge`](https://papillonbee.github.io/sticky-bridge/) then create game, join game, bid, choose partner, play trick, and reset game through `bridge-service` REST API, and view latest game state change, and chat through `bridge-service` WebSocket
 
 Example of REST API for player = `Anita` to view game = `Daddy`
 ```javascript

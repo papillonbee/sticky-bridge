@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
+        <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
         <link rel="stylesheet" href="./styles/main.css">
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
         <script src="./js/components/favicon.js"></script>
-        <script src="./js/utils//jsonUtils.js"></script>
+        <script src="./js/constants/messageConstants.js"></script>
         <script src="./config.js"></script>
         <script src="./js/services/bridgeServiceConfig.js"></script>
         <script src="./js/services/bridgeServiceApiClient.js"></script>
@@ -123,22 +123,24 @@
             }
 
             onWsMessage = async (event) => {
-                if (isValidJson(event.data)) {
-                    const data = JSON.parse(event.data);
-                    onReceiveGameData(data);
-                } else {
-                    addMessage(event.data);
+                const msg = JSON.parse(event.data);
+                if (msg.messageType === MESSAGE_TYPE.CHAT) {
+                    addMessage(msg.message);
                     event.preventDefault();
+                }
+                if (msg.messageType === MESSAGE_TYPE.GAME) {
+                    const data = JSON.parse(msg.message);
+                    onReceiveGameData(data);
                 }
             }
 
             onWsReconnect = (event, backoffDelay) => {
                 const seconds = backoffDelay / 1000;
-                addMessage(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
+                console.log(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
             }
 
             onWsMaxReconnect = (event) => {
-                addMessage("Connection lost. Max reconnection attempts reached. Please refresh the page.");
+                addMessage("Connection lost. Please refresh the page.");
             }
 
             onWsReopen = async (event) => {
@@ -193,7 +195,8 @@
                     return;
                 }
                 const input = document.getElementById("messageText");
-                bridgeServiceWsClient.send(input.value);
+                const msg = {messageType: MESSAGE_TYPE.CHAT, message: input.value};
+                bridgeServiceWsClient.send(JSON.stringify(msg));
                 input.value = "";
             }
 
