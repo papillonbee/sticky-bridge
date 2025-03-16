@@ -90,6 +90,10 @@
                 const connectButton = event.target.querySelector("button");
                 const gameInput = document.getElementById("game-id");
                 const playerInput = document.getElementById("player-id");
+                if (gameInput.value.includes(" ") || playerInput.value.includes(" "))  {
+                    alert("Game and Player cannot contain whitespaces!");
+                    return;
+                }
                 connectButton.disabled = true;
                 gameInput.disabled = true;
                 playerInput.disabled = true;
