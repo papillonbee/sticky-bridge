@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
+        <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no">
         <link rel="stylesheet" href="./styles/main.css">
         <script src="https://cardmeister.github.io/elements.cardmeister.min.js"></script>
         <script src="./js/components/favicon.js"></script>
-        <script src="./js/utils//jsonUtils.js"></script>
+        <script src="./js/constants/messageConstants.js"></script>
         <script src="./config.js"></script>
         <script src="./js/services/bridgeServiceConfig.js"></script>
         <script src="./js/services/bridgeServiceApiClient.js"></script>
@@ -77,12 +77,23 @@
                 <button id="play-card-btn">Play</button>
             </div>
         </div>
+        <div id="next-game-modal" class="modal">
+            <div class="modal-content">
+                <form id="next-game-form-container" action="" onsubmit="sendNextGame(event)">
+                    <button>Next<br>game</button>
+                </form>
+            </div>
+        </div>
         <script>
             connect = async (event) => {
                 event.preventDefault();
                 const connectButton = event.target.querySelector("button");
                 const gameInput = document.getElementById("game-id");
                 const playerInput = document.getElementById("player-id");
+                if (gameInput.value.includes(" ") || playerInput.value.includes(" "))  {
+                    alert("Game and Player cannot contain whitespaces!");
+                    return;
+                }
                 connectButton.disabled = true;
                 gameInput.disabled = true;
                 playerInput.disabled = true;
@@ -116,22 +127,24 @@
             }
 
             onWsMessage = async (event) => {
-                if (isValidJson(event.data)) {
-                    const data = JSON.parse(event.data);
-                    onReceiveGameData(data);
-                } else {
-                    addMessage(event.data);
+                const msg = JSON.parse(event.data);
+                if (msg.messageType === MESSAGE_TYPE.CHAT) {
+                    addMessage(msg.message);
                     event.preventDefault();
+                }
+                if (msg.messageType === MESSAGE_TYPE.GAME) {
+                    const data = JSON.parse(msg.message);
+                    onReceiveGameData(data);
                 }
             }
 
             onWsReconnect = (event, backoffDelay) => {
                 const seconds = backoffDelay / 1000;
-                addMessage(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
+                console.log(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
             }
 
             onWsMaxReconnect = (event) => {
-                addMessage("Connection lost. Max reconnection attempts reached. Please refresh the page.");
+                addMessage("Connection lost. Please refresh the page.");
             }
 
             onWsReopen = async (event) => {
@@ -168,6 +181,7 @@
                 buildBidModal(data);
                 buildChoosePartnerModal(data);
                 buildPlayCardModal(data);
+                buildNextGameModal(data);
             }
 
             addMessage = (text) => {
@@ -185,7 +199,8 @@
                     return;
                 }
                 const input = document.getElementById("messageText");
-                bridgeServiceWsClient.send(input.value);
+                const msg = {messageType: MESSAGE_TYPE.CHAT, message: input.value};
+                bridgeServiceWsClient.send(JSON.stringify(msg));
                 input.value = "";
             }
 
@@ -193,7 +208,7 @@
 
             buildBidModal = (data) => {
                 const playerBidTurnContainer = document.getElementById("player-bid-turn");
-                if (data.playerAction === PLAYER_ACTION.BID) {
+                if (data.playerActions.includes(PLAYER_ACTION.BID)) {
                     playerBidTurnContainer.addEventListener("click", openBidModal);
                 }
             }
@@ -230,7 +245,7 @@
 
             buildChoosePartnerModal = (data) => {
                 const playerChoosePartnerTurnContainer = document.getElementById("player-choose-partner-turn");
-                if (data.playerAction === PLAYER_ACTION.CHOOSE_PARTNER) {
+                if (data.playerActions.includes(PLAYER_ACTION.CHOOSE_PARTNER)) {
                     playerChoosePartnerTurnContainer.addEventListener("click", openChoosePartnerModal);
                 }
             }
@@ -257,7 +272,7 @@
             let selectedPlayingCard = null;
 
             buildPlayCardModal = (data) => {
-                if (data.playerAction !== PLAYER_ACTION.TRICK) {
+                if (!data.playerActions.includes(PLAYER_ACTION.TRICK)) {
                     Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
                         playingCard.removeEventListener("click", openPlayCardModal);
                     });
@@ -271,7 +286,7 @@
 
                 playCardBtn.replaceWith(playCardBtn.cloneNode(true));
                 document.getElementById("play-card-btn").addEventListener("click", async (event) => {
-                    if (data.playerAction !== PLAYER_ACTION.TRICK) {
+                    if (!data.playerActions.includes(PLAYER_ACTION.TRICK)) {
                         return;
                     }
                     await playCard();
@@ -294,6 +309,35 @@
                     }
                     playCardModal.style.display = "none";
                 }
+            }
+
+            const nextGameModal = document.getElementById("next-game-modal");
+
+            buildNextGameModal = (data) => {
+                const playerResetGameContainer = document.querySelector("#score-board .player-reset-game");
+                const scoreBoard = document.getElementById("score-board");
+                Array.from(scoreBoard.children).forEach(scoreContainer => {
+                    if (scoreContainer.classList.contains("player-reset-game")
+                        && data.playerActions.includes(PLAYER_ACTION.RESET)) {
+                        scoreContainer.addEventListener("click", openNextGameModal);
+                    } else {
+                        scoreContainer.removeEventListener("click", openNextGameModal);    
+                    }
+                });
+            }
+
+            openNextGameModal = async (event) => {
+                event.stopPropagation();
+                openModal(nextGameModal, event.currentTarget);
+            }
+
+            sendNextGame = async (event) => {
+                event.preventDefault();
+                let resetResponse = await bridgeServiceApiClient.resetGame();
+                if (resetResponse && resetResponse.code!== 0) {
+                    alert(resetResponse?.msg  || "Failed to connect to game");
+                }
+                nextGameModal.style.display = "none";
             }
         </script>
     </body>

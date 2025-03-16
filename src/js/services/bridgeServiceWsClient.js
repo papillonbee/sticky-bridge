@@ -39,6 +39,11 @@ const createBridgeServiceWsClient = (config) => {
     };
 
     const handleMessage = async (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.messageType === MESSAGE_TYPE.PING) {
+            send(JSON.stringify({messageType: MESSAGE_TYPE.PONG}));
+            return;
+        }
         await onMessageHandler(event);
     }
 
@@ -88,7 +93,7 @@ const createBridgeServiceWsClient = (config) => {
         connect,
         connected,
         send,
-        setIntentionalReconnect: (value) => intentionalReconnect = value
+        setIntentionalReconnect: (value) => intentionalReconnect = value,
     };
 };
 
