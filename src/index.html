@@ -77,6 +77,11 @@
                 <button id="play-card-btn">Play</button>
             </div>
         </div>
+        <div id="auto-play-card-modal" class="modal">
+            <div class="modal-content">
+                <button id="auto-play-card-btn"></button>
+            </div>
+        </div>
         <div id="next-game-modal" class="modal">
             <div class="modal-content">
                 <form id="next-game-form-container" action="" onsubmit="sendNextGame(event)">
@@ -117,7 +122,7 @@
                         alert(viewResponse?.msg || "Failed to view game");
                         return;
                     }
-                    onReceiveGameData(viewResponse.data);
+                    await onReceiveGameData(viewResponse.data);
                     await bridgeServiceWsClient.connect(onWsMessage, onWsReconnect, onWsMaxReconnect, onWsReopen);
                 } finally {
                     connectButton.disabled = false;
@@ -134,7 +139,7 @@
                 }
                 if (msg.messageType === MESSAGE_TYPE.GAME) {
                     const data = JSON.parse(msg.message);
-                    onReceiveGameData(data);
+                    await onReceiveGameData(data);
                 }
             }
 
@@ -155,7 +160,7 @@
                     try {
                         let viewResponse = await bridgeServiceApiClient.viewGame();
                         if (viewResponse && viewResponse.code === 0) {
-                            onReceiveGameData(viewResponse.data);
+                            await onReceiveGameData(viewResponse.data);
                             return;
                         }
                         viewAttempts++;
@@ -173,7 +178,7 @@
                 }
             }
 
-            onReceiveGameData = (data) => {
+            onReceiveGameData = async (data) => {
                 buildPlayerHand(data);
                 buildGameStateHistory(data);
                 buildGameStateInfo(data);
@@ -181,7 +186,9 @@
                 buildBidModal(data);
                 buildChoosePartnerModal(data);
                 buildPlayCardModal(data);
+                buildAutoPlayCardModal(data);
                 buildNextGameModal(data);
+                await autoPlayCard(data);
             }
 
             addMessage = (text) => {
@@ -308,6 +315,80 @@
                         alert(trickResponse?.msg  || "Failed to connect to game");
                     }
                     playCardModal.style.display = "none";
+                }
+            }
+
+            const autoPlayCardModal = document.getElementById("auto-play-card-modal");
+            let selectedAutoPlayingCard = null;
+
+            buildAutoPlayCardModal = (data) => {
+                if (!data.bidWinner || !data.partner) {
+                    return;
+                }
+                if (data.playerActions.includes(PLAYER_ACTION.TRICK)) {
+                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
+                        playingCard.removeEventListener("click", openAutoPlayCardModal);
+                    });
+                } else {
+                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
+                        playingCard.addEventListener("click", openAutoPlayCardModal);
+                    });
+                }
+
+                const autoPlayCardBtn = document.getElementById("auto-play-card-btn");
+
+                autoPlayCardBtn.replaceWith(autoPlayCardBtn.cloneNode(true));
+                document.getElementById("auto-play-card-btn").addEventListener("click", async (event) => {
+                    if (data.playerActions.includes(PLAYER_ACTION.TRICK)) {
+                        return;
+                    }
+                    selectAutoPlayingCard();
+                });
+            }
+
+            openAutoPlayCardModal = (event) => {
+                event.stopPropagation();
+                const playingCard = event.currentTarget;
+                selectedAutoPlayingCard = playingCard;
+
+                const autoPlayCardBtn = document.getElementById("auto-play-card-btn");
+                if (selectedAutoPlayingCard.classList.contains("selected-auto-play")) {
+                    autoPlayCardBtn.innerHTML = "Cancel";
+                } else {
+                    autoPlayCardBtn.innerHTML = "Auto<br>play";
+                }
+
+                openModal(autoPlayCardModal, playingCard);
+            }
+
+            selectAutoPlayingCard = () => {
+                if (selectedAutoPlayingCard) {
+                    Array.from(document.getElementById("player-hand").children).forEach(card => {
+                        if (selectedAutoPlayingCard === card) {
+                            return;
+                        }
+                        card.classList.remove("selected-auto-play");
+                    });
+                    if (selectedAutoPlayingCard.classList.contains("selected-auto-play")) {
+                        selectedAutoPlayingCard.classList.remove("selected-auto-play");
+                    } else {
+                        selectedAutoPlayingCard.classList.add("selected-auto-play");
+                    }
+                    autoPlayCardModal.style.display = "none";
+                }
+            }
+
+            autoPlayCard = async (data) => {
+                if (selectedAutoPlayingCard
+                    && selectedAutoPlayingCard.classList.contains("selected-auto-play")
+                    && data.playerActions.includes(PLAYER_ACTION.TRICK)) {
+                    const trickInput = selectedAutoPlayingCard.getAttribute("cid");
+                    let trickResponse = await bridgeServiceApiClient.trick(trickInput);
+                    if (trickResponse && trickResponse.code !== 0) {
+                        selectedAutoPlayingCard.classList.remove("selected-auto-play");
+                        alert(trickResponse?.msg  || "Failed to connect to game");
+                    }
+                    selectedAutoPlayingCard = null;
                 }
             }
 
