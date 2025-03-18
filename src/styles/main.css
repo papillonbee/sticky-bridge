@@ -55,6 +55,9 @@ playing-card:hover {
 [winner-card=true] img {
     outline: 3px solid gold;
 }
+.selected-auto-play img {
+    outline: 3px solid #6495ED;
+}
 #messages {
     width: 100vw;
     height: 9vh;

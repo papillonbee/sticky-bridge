@@ -10,6 +10,7 @@ const setupModalOutsideClick = () => {
     const bidModalContent = document.querySelector("#bid-modal .modal-content");
     const choosePartnerModalContent = document.querySelector("#choose-partner-modal .modal-content");
     const playCardModalContent = document.querySelector("#play-card-modal .modal-content");
+    const autoPlayCardModalContent = document.querySelector("#auto-play-card-modal .modal-content");
     const nextGameModal = document.querySelector("#next-game-modal .modal-content");
     
     window.addEventListener("click", (event) => {
@@ -21,6 +22,9 @@ const setupModalOutsideClick = () => {
         }
         if (!playCardModalContent.contains(event.target)) {
             document.getElementById("play-card-modal").style.display = "none";
+        }
+        if (!autoPlayCardModalContent.contains(event.target)) {
+            document.getElementById("auto-play-card-modal").style.display = "none";
         }
         if (!nextGameModal.contains(event.target)) {
             document.getElementById("next-game-modal").style.display = "none";
