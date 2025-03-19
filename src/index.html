@@ -302,6 +302,7 @@
                 event.stopPropagation();
                 const playingCard = event.currentTarget;
                 selectedPlayingCard = playingCard;
+                closeModal(autoPlayCardModal);
                 openModal(playCardModal, playingCard);
             }
 
@@ -418,7 +419,7 @@
             sendNextGame = async (event) => {
                 event.preventDefault();
                 let resetResponse = await bridgeServiceApiClient.resetGame();
-                if (resetResponse && resetResponse.code!== 0) {
+                if (resetResponse && resetResponse.code !== 0) {
                     alert(resetResponse?.msg  || "Failed to connect to game");
                 }
                 nextGameModal.style.display = "none";

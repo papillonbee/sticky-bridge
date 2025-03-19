@@ -6,6 +6,10 @@ const openModal = (modal, targetElement) => {
     modal.style.display = "block";
 };
 
+const closeModal = (modal) => {
+    modal.style.display = "none";
+}
+
 const setupModalOutsideClick = () => {
     const bidModalContent = document.querySelector("#bid-modal .modal-content");
     const choosePartnerModalContent = document.querySelector("#choose-partner-modal .modal-content");
