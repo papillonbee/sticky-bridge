@@ -170,9 +170,6 @@
             }
 
             onReceiveGameData = async (data) => {
-                try {
-
-                
                 buildPlayerHand(data);
                 buildGameStateHistory(data);
                 buildGameStateInfo(data);
@@ -183,10 +180,6 @@
                 buildAutoPlayCardModal(data);
                 buildNextGameModal(data);
                 await autoPlayCard(data);
-                } catch (e) {
-                    console.log("stack trace");
-                    console.log(e.stack);
-                }
             }
 
             addMessage = (text) => {
