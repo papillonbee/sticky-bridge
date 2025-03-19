@@ -323,6 +323,10 @@
 
             buildAutoPlayCardModal = (data) => {
                 if (!data.bidWinner || !data.partner) {
+                    if (selectedAutoPlayingCard) {
+                        selectedAutoPlayingCard.classList.remove("selected-auto-play");
+                        selectedAutoPlayingCard = null;
+                    }
                     return;
                 }
                 if (data.playerActions.includes(PLAYER_ACTION.TRICK)) {
