@@ -123,7 +123,7 @@
                         return;
                     }
                     await onReceiveGameData(viewResponse.data);
-                    await bridgeServiceWsClient.connect(onWsMessage, onWsReconnect, onWsMaxReconnect, onWsReopen);
+                    await bridgeServiceWsClient.connect(onWsMessage, onWsReopen);
                 } finally {
                     connectButton.disabled = false;
                     gameInput.disabled = false;
@@ -141,15 +141,6 @@
                     const data = JSON.parse(msg.message);
                     await onReceiveGameData(data);
                 }
-            }
-
-            onWsReconnect = (event, backoffDelay) => {
-                const seconds = backoffDelay / 1000;
-                console.log(`Connection lost. Reconnecting in ${seconds} ${seconds === 1 ? "second" : "seconds"}...`);
-            }
-
-            onWsMaxReconnect = (event) => {
-                addMessage("Connection lost. Please refresh the page.");
             }
 
             onWsReopen = async (event) => {
@@ -179,6 +170,9 @@
             }
 
             onReceiveGameData = async (data) => {
+                try {
+
+                
                 buildPlayerHand(data);
                 buildGameStateHistory(data);
                 buildGameStateInfo(data);
@@ -189,6 +183,10 @@
                 buildAutoPlayCardModal(data);
                 buildNextGameModal(data);
                 await autoPlayCard(data);
+                } catch (e) {
+                    console.log("stack trace");
+                    console.log(e.stack);
+                }
             }
 
             addMessage = (text) => {
@@ -389,6 +387,7 @@
                     const trickInput = selectedAutoPlayingCard.getAttribute("cid");
                     let trickResponse = await bridgeServiceApiClient.trick(trickInput);
                     if (trickResponse && trickResponse.code !== 0) {
+                        // there's casually duplicate trick api calls and the second call has npe thrown here
                         selectedAutoPlayingCard.classList.remove("selected-auto-play");
                         alert(trickResponse?.msg  || "Failed to connect to game");
                     }
