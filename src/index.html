@@ -314,20 +314,21 @@
             let selectedAutoPlayingCard = null;
 
             buildAutoPlayCardModal = (data) => {
-                if (!data.bidWinner || !data.partner) {
+                const gameReadyForPlay = data.bidWinner && data.partner;
+                if (!gameReadyForPlay) {
                     if (selectedAutoPlayingCard) {
                         selectedAutoPlayingCard.classList.remove("selected-auto-play");
                         selectedAutoPlayingCard = null;
                     }
-                    return;
                 }
-                if (data.playerActions.includes(PLAYER_ACTION.TRICK)) {
+                const gameReadyForAutoPlay = gameReadyForPlay && !data.playerActions.includes(PLAYER_ACTION.TRICK)
+                if (gameReadyForAutoPlay) {
                     Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
-                        playingCard.removeEventListener("click", openAutoPlayCardModal);
+                        playingCard.addEventListener("click", openAutoPlayCardModal);
                     });
                 } else {
                     Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
-                        playingCard.addEventListener("click", openAutoPlayCardModal);
+                        playingCard.removeEventListener("click", openAutoPlayCardModal);
                     });
                 }
 
@@ -335,7 +336,7 @@
 
                 autoPlayCardBtn.replaceWith(autoPlayCardBtn.cloneNode(true));
                 document.getElementById("auto-play-card-btn").addEventListener("click", async (event) => {
-                    if (data.playerActions.includes(PLAYER_ACTION.TRICK)) {
+                    if (!gameReadyForAutoPlay) {
                         return;
                     }
                     selectAutoPlayingCard();
