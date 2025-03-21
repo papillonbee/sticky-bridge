@@ -16,10 +16,11 @@
         <script src="./js/components/gameStateInfo.js"></script>
         <script src="./js/components/scoreBoard.js"></script>
         <script src="./js/utils/modalUtils.js"></script>
+        <script src="./js/game/gameService.js"></script>
     </head>
     <body>
         <h2>Sticky Bridge!</h2>
-        <form id="connect-form-container" action="" onsubmit="connect(event)">
+        <form id="connect-form-container" action="" onsubmit="gameService.connect(event)">
             <label>Game: <input type="text" id="game-id" autocomplete="off" required/></label>
             <label>Player: <input type="text" id="player-id" autocomplete="off" required/></label>
             <button>Connect</button>
@@ -30,7 +31,7 @@
             <div id="partner"></div>
             <div id="tricks"></div>
         </div>
-        <form id="chat-form-container" action="" onsubmit="sendMessage(event)">
+        <form id="chat-form-container" action="" onsubmit="gameService.sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
             <div id="game-state-info">ℹ
@@ -41,7 +42,7 @@
         <div id="score-board"></div>
         <div id="bid-modal" class="modal">
             <div class="modal-content">
-                <form id="bid-form-container" action="" onsubmit="sendBid(event)">
+                <form id="bid-form-container" action="" onsubmit="gameService.sendBid(event)">
                     <fieldset>
                         <label><input type="radio" name="bid-level" value="1">1</label>
                         <label><input type="radio" name="bid-level" value="2">2</label>
@@ -66,7 +67,7 @@
         </div>
         <div id="choose-partner-modal" class="modal">
             <div class="modal-content">
-                <form id="choose-partner-form-container" action="" onsubmit="sendChoosePartner(event)">
+                <form id="choose-partner-form-container" action="" onsubmit="gameService.sendChoosePartner(event)">
                     <label>Partner card: <input type="text" id="partner-card" autocomplete="off"/></label>
                     <button>Choose</button>
                 </form>
@@ -84,340 +85,10 @@
         </div>
         <div id="next-game-modal" class="modal">
             <div class="modal-content">
-                <form id="next-game-form-container" action="" onsubmit="sendNextGame(event)">
+                <form id="next-game-form-container" action="" onsubmit="gameService.sendNextGame(event)">
                     <button>Next<br>game</button>
                 </form>
             </div>
         </div>
-        <script>
-            connect = async (event) => {
-                event.preventDefault();
-                const connectButton = event.target.querySelector("button");
-                const gameInput = document.getElementById("game-id");
-                const playerInput = document.getElementById("player-id");
-                if (gameInput.value.includes(" ") || playerInput.value.includes(" "))  {
-                    alert("Game and Player cannot contain whitespaces!");
-                    return;
-                }
-                connectButton.disabled = true;
-                gameInput.disabled = true;
-                playerInput.disabled = true;
-                
-                try {
-                    bridgeServiceWsClient.setIntentionalReconnect(true);
-                    let createResponse = await bridgeServiceApiClient.createGame();
-                    if (!(createResponse && (createResponse.code === 0 || createResponse.code === 10019))) {
-                        alert(createResponse?.msg || "Failed to connect to game");
-                        return;
-                    }
-                    if (createResponse.code === 10019) {
-                        let joinResponse = await bridgeServiceApiClient.joinGame();
-                        if (!(joinResponse && (joinResponse.code === 0 || joinResponse.code === 10002))) {
-                            alert(joinResponse?.msg || "Failed to connect to game");
-                            return;
-                        }
-                    }
-                    let viewResponse = await bridgeServiceApiClient.viewGame();
-                    if (!(viewResponse && viewResponse.code === 0)) {
-                        alert(viewResponse?.msg || "Failed to view game");
-                        return;
-                    }
-                    await onReceiveGameData(viewResponse.data);
-                    await bridgeServiceWsClient.connect(onWsMessage, onWsReopen);
-                } finally {
-                    connectButton.disabled = false;
-                    gameInput.disabled = false;
-                    playerInput.disabled = false;
-                }
-            }
-
-            onWsMessage = async (event) => {
-                const msg = JSON.parse(event.data);
-                if (msg.messageType === MESSAGE_TYPE.CHAT) {
-                    addMessage(msg.message);
-                    event.preventDefault();
-                }
-                if (msg.messageType === MESSAGE_TYPE.GAME) {
-                    const data = JSON.parse(msg.message);
-                    await onReceiveGameData(data);
-                }
-            }
-
-            onWsReopen = async (event) => {
-                let viewAttempts = 0;
-                const maxViewAttempts = 3;
-                
-                while (viewAttempts < maxViewAttempts) {
-                    try {
-                        let viewResponse = await bridgeServiceApiClient.viewGame();
-                        if (viewResponse && viewResponse.code === 0) {
-                            await onReceiveGameData(viewResponse.data);
-                            return;
-                        }
-                        viewAttempts++;
-                        if (viewAttempts < maxViewAttempts) {
-                            const backoffDelay = Math.min(1000 * Math.pow(2, viewAttempts), 10000);
-                            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-                        }
-                    } catch (error) {
-                        console.error("ViewGame error:", error);
-                        viewAttempts++;
-                        if (viewAttempts === maxViewAttempts) {
-                            alert("Failed to refresh game state after multiple attempts");
-                        }
-                    }
-                }
-            }
-
-            onReceiveGameData = async (data) => {
-                buildPlayerHand(data);
-                buildGameStateHistory(data);
-                buildGameStateInfo(data);
-                buildScoreBoard(data);
-                buildBidModal(data);
-                buildChoosePartnerModal(data);
-                buildPlayCardModal(data);
-                buildAutoPlayCardModal(data);
-                buildNextGameModal(data);
-                await autoPlayCard(data);
-            }
-
-            addMessage = (text) => {
-                let li = document.createElement("li");
-                li.textContent = text;
-                let messages = document.getElementById("messages");
-                messages.appendChild(li);
-                messages.scrollTop = messages.scrollHeight;
-            }
-
-            sendMessage = (event) => {
-                event.preventDefault();
-                if (!bridgeServiceWsClient.connected()) {
-                    alert("Not connected to game");
-                    return;
-                }
-                const input = document.getElementById("messageText");
-                const msg = {messageType: MESSAGE_TYPE.CHAT, message: input.value};
-                bridgeServiceWsClient.send(JSON.stringify(msg));
-                input.value = "";
-            }
-
-            const bidModal = document.getElementById("bid-modal");
-
-            buildBidModal = (data) => {
-                const playerBidTurnContainer = document.getElementById("player-bid-turn");
-                if (data.playerActions.includes(PLAYER_ACTION.BID)) {
-                    playerBidTurnContainer.addEventListener("click", openBidModal);
-                }
-            }
-
-            openBidModal = (event) => {
-                event.stopPropagation();
-                openModal(bidModal, event.currentTarget);
-            }
-
-            sendBid = async (event) => {
-                event.preventDefault();
-                const clickedButton = event.submitter.value;
-                let bidInput = null;
-                if (clickedButton === "bid") {
-                    const selectedBidLevel = document.querySelector('input[name="bid-level"]:checked');
-                    const selectedBidSuit = document.querySelector('input[name="bid-suit"]:checked');
-                    if (!(selectedBidLevel && selectedBidSuit)) {
-                        return;
-                    }
-                    bidInput = `${selectedBidLevel.value}${selectedBidSuit.value}`;
-                }
-                if (clickedButton === "pass") {
-                    bidInput = BID.PASS;
-                }
-                
-                let bidResponse = await bridgeServiceApiClient.bid(bidInput);
-                if (bidResponse && bidResponse.code !== 0) {
-                    alert(bidResponse?.msg  || "Failed to connect to game");
-                }
-                bidModal.style.display = "none";
-            }
-
-            const choosePartnerModal = document.getElementById("choose-partner-modal");
-
-            buildChoosePartnerModal = (data) => {
-                const playerChoosePartnerTurnContainer = document.getElementById("player-choose-partner-turn");
-                if (data.playerActions.includes(PLAYER_ACTION.CHOOSE_PARTNER)) {
-                    playerChoosePartnerTurnContainer.addEventListener("click", openChoosePartnerModal);
-                }
-            }
-
-            openChoosePartnerModal = (event) => {
-                event.stopPropagation();
-                openModal(choosePartnerModal, event.currentTarget);
-            }
-
-            sendChoosePartner = async (event) => {
-                event.preventDefault();
-                const partnerInput = document.getElementById("partner-card").value;
-                if (!partnerInput) {
-                    return;
-                }
-                let partnerResponse = await bridgeServiceApiClient.partner(partnerInput.toUpperCase());
-                if (partnerResponse && partnerResponse.code !== 0) {
-                    alert(partnerResponse?.msg  || "Failed to connect to game");
-                }
-                choosePartnerModal.style.display = "none";
-            }
-
-            const playCardModal = document.getElementById("play-card-modal");
-            let selectedPlayingCard = null;
-
-            buildPlayCardModal = (data) => {
-                if (!data.playerActions.includes(PLAYER_ACTION.TRICK)) {
-                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
-                        playingCard.removeEventListener("click", openPlayCardModal);
-                    });
-                } else {
-                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
-                        playingCard.addEventListener("click", openPlayCardModal);
-                    });
-                }
-
-                const playCardBtn = document.getElementById("play-card-btn");
-
-                playCardBtn.replaceWith(playCardBtn.cloneNode(true));
-                document.getElementById("play-card-btn").addEventListener("click", async (event) => {
-                    if (!data.playerActions.includes(PLAYER_ACTION.TRICK)) {
-                        return;
-                    }
-                    await playCard();
-                });
-            }
-
-            openPlayCardModal = (event) => {
-                event.stopPropagation();
-                const playingCard = event.currentTarget;
-                selectedPlayingCard = playingCard;
-                closeModal(autoPlayCardModal);
-                openModal(playCardModal, playingCard);
-            }
-
-            playCard = async () => {
-                if (selectedPlayingCard) {
-                    const trickInput = selectedPlayingCard.getAttribute("cid");
-                    let trickResponse = await bridgeServiceApiClient.trick(trickInput);
-                    if (trickResponse && trickResponse.code !== 0) {
-                        alert(trickResponse?.msg  || "Failed to connect to game");
-                    }
-                    playCardModal.style.display = "none";
-                }
-            }
-
-            const autoPlayCardModal = document.getElementById("auto-play-card-modal");
-            let selectedAutoPlayingCard = null;
-
-            buildAutoPlayCardModal = (data) => {
-                const gameReadyForPlay = data.bidWinner && data.partner;
-                if (!gameReadyForPlay) {
-                    if (selectedAutoPlayingCard) {
-                        selectedAutoPlayingCard.classList.remove("selected-auto-play");
-                        selectedAutoPlayingCard = null;
-                    }
-                }
-                const gameReadyForAutoPlay = gameReadyForPlay && !data.playerActions.includes(PLAYER_ACTION.TRICK)
-                if (gameReadyForAutoPlay) {
-                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
-                        playingCard.addEventListener("click", openAutoPlayCardModal);
-                    });
-                } else {
-                    Array.from(document.getElementById("player-hand").children).forEach(playingCard => {
-                        playingCard.removeEventListener("click", openAutoPlayCardModal);
-                    });
-                }
-
-                const autoPlayCardBtn = document.getElementById("auto-play-card-btn");
-
-                autoPlayCardBtn.replaceWith(autoPlayCardBtn.cloneNode(true));
-                document.getElementById("auto-play-card-btn").addEventListener("click", async (event) => {
-                    if (!gameReadyForAutoPlay) {
-                        return;
-                    }
-                    selectAutoPlayingCard();
-                });
-            }
-
-            openAutoPlayCardModal = (event) => {
-                event.stopPropagation();
-                const playingCard = event.currentTarget;
-                selectedAutoPlayingCard = playingCard;
-
-                const autoPlayCardBtn = document.getElementById("auto-play-card-btn");
-                if (selectedAutoPlayingCard.classList.contains("selected-auto-play")) {
-                    autoPlayCardBtn.innerHTML = "Cancel";
-                } else {
-                    autoPlayCardBtn.innerHTML = "Auto<br>play";
-                }
-
-                openModal(autoPlayCardModal, playingCard);
-            }
-
-            selectAutoPlayingCard = () => {
-                if (selectedAutoPlayingCard) {
-                    Array.from(document.getElementById("player-hand").children).forEach(card => {
-                        if (selectedAutoPlayingCard === card) {
-                            return;
-                        }
-                        card.classList.remove("selected-auto-play");
-                    });
-                    if (selectedAutoPlayingCard.classList.contains("selected-auto-play")) {
-                        selectedAutoPlayingCard.classList.remove("selected-auto-play");
-                    } else {
-                        selectedAutoPlayingCard.classList.add("selected-auto-play");
-                    }
-                    autoPlayCardModal.style.display = "none";
-                }
-            }
-
-            autoPlayCard = async (data) => {
-                if (selectedAutoPlayingCard
-                    && selectedAutoPlayingCard.classList.contains("selected-auto-play")
-                    && data.playerActions.includes(PLAYER_ACTION.TRICK)) {
-                    const trickInput = selectedAutoPlayingCard.getAttribute("cid");
-                    let trickResponse = await bridgeServiceApiClient.trick(trickInput);
-                    if (trickResponse && trickResponse.code !== 0) {
-                        // there's casually duplicate trick api calls and the second call has npe thrown here
-                        selectedAutoPlayingCard.classList.remove("selected-auto-play");
-                        alert(trickResponse?.msg  || "Failed to connect to game");
-                    }
-                    selectedAutoPlayingCard = null;
-                }
-            }
-
-            const nextGameModal = document.getElementById("next-game-modal");
-
-            buildNextGameModal = (data) => {
-                const playerResetGameContainer = document.querySelector("#score-board .player-reset-game");
-                const scoreBoard = document.getElementById("score-board");
-                Array.from(scoreBoard.children).forEach(scoreContainer => {
-                    if (scoreContainer.classList.contains("player-reset-game")
-                        && data.playerActions.includes(PLAYER_ACTION.RESET)) {
-                        scoreContainer.addEventListener("click", openNextGameModal);
-                    } else {
-                        scoreContainer.removeEventListener("click", openNextGameModal);    
-                    }
-                });
-            }
-
-            openNextGameModal = async (event) => {
-                event.stopPropagation();
-                openModal(nextGameModal, event.currentTarget);
-            }
-
-            sendNextGame = async (event) => {
-                event.preventDefault();
-                let resetResponse = await bridgeServiceApiClient.resetGame();
-                if (resetResponse && resetResponse.code !== 0) {
-                    alert(resetResponse?.msg  || "Failed to connect to game");
-                }
-                nextGameModal.style.display = "none";
-            }
-        </script>
     </body>
 </html>
