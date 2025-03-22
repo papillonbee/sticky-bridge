@@ -1,30 +1,36 @@
 const createBridgeServiceWsClient = (config) => {
     let ws = null;
-    let reconnectAttempts = 0;
-    let maxReconnectAttempts = 5;
-    let reconnectTimeout = null;
+    let healthCheckInterval = null;
 
-    let intentionalClose = false;
     let intentionalReconnect = false;
 
     let onMessageHandler = null;
-    let onReconnectHandler = null;
-    let onMaxReconnectHandler = null;
     let onReopenHandler = null;
 
-    const connect = (onMessage, onReconnect, onMaxReconnect, onReopen) => {
+    const connect = (onMessage, onReopen) => {
         onMessageHandler = onMessage;
-        onReconnectHandler = onReconnect;
-        onMaxReconnectHandler = onMaxReconnect;
         onReopenHandler = onReopen;
 
         if (ws) {
-            intentionalClose = true;
             ws.close();
         }
 
         ws = new WebSocket(config.getBridgeServiceWebSocketUrl());
         setupWebSocketHandlers();
+        startHealthCheck();
+    };
+
+    const startHealthCheck = () => {
+        if (healthCheckInterval) {
+            clearInterval(healthCheckInterval);
+        }
+        healthCheckInterval = setInterval(() => {
+            console.log("checking WebSocket health");
+            if (!connected()) {
+                console.log("WebSocket disconnected, attempting to reconnect...");
+                connect(onMessageHandler, onReopenHandler);
+            }
+        }, 5000);
     };
 
     const connected = () => {
@@ -48,29 +54,11 @@ const createBridgeServiceWsClient = (config) => {
     }
 
     const handleClose = (event) => {
-        if (intentionalClose) {
-            intentionalClose = false;
-            return;
-        }
-
-        if (reconnectAttempts < maxReconnectAttempts) {
-            const backoffDelay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-            onReconnectHandler(event, backoffDelay);
-            reconnectTimeout = setTimeout(() => {
-                reconnectAttempts++;
-                connect(onMessageHandler, onReconnectHandler, onMaxReconnectHandler, onReopenHandler);
-            }, backoffDelay);
-        } else {
-            onMaxReconnectHandler(event);
-        }
+        console.log("WebSocket closed:", event);
     };
 
     const handleOpen = async (event) => {
-        reconnectAttempts = 0;
-        if (reconnectTimeout) {
-            clearTimeout(reconnectTimeout);
-            reconnectTimeout = null;
-        }
+        console.log("WebSocket opened:", event);
 
         if (intentionalReconnect) {
             intentionalReconnect = false;
