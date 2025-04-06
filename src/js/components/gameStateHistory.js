@@ -47,7 +47,7 @@ const buildBids = (data) => {
             playerBidTurnContainer.id = playerBidTurnContainerId;
             bidsContainer.appendChild(playerBidTurnContainer);
         }
-        playerBidTurnContainer.innerHTML = `<b>Your turn to bid!</b>`;
+        playerBidTurnContainer.innerHTML = `<b>Click here to bid!</b>`;
     }
 }
 
@@ -83,7 +83,7 @@ const buildPlayerChoosePartnerTurn = (data) => {
             playerChoosePartnerTurnContainer.id = playerChoosePartnerTurnContainerId;
             partnerContainer.appendChild(playerChoosePartnerTurnContainer);
         }
-        playerChoosePartnerTurnContainer.innerHTML = `<b>Your turn to choose partner!</b>`;
+        playerChoosePartnerTurnContainer.innerHTML = `<b>Click here to choose partner!</b>`;
     } else {
         if (playerChoosePartnerTurnContainer) {
             partnerContainer.removeChild(playerChoosePartnerTurnContainer);
