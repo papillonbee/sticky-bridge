@@ -25,7 +25,7 @@ const createBridgeServiceWsClient = (config) => {
             clearInterval(healthCheckInterval);
         }
         healthCheckInterval = setInterval(() => {
-            console.log("checking WebSocket health");
+            console.log("Checking WebSocket health");
             if (!connected()) {
                 console.log("WebSocket disconnected, attempting to reconnect...");
                 connect(onMessageHandler, onReopenHandler);
@@ -72,7 +72,7 @@ const createBridgeServiceWsClient = (config) => {
     }
 
     const send = (message) => {
-        if (!ws) return false;
+        if (!connected()) return false;
         ws.send(message);
         return true;
     };

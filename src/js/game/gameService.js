@@ -5,6 +5,7 @@ const getPlayerHand = () => getElement("player-hand");
 
 // State Management
 const createGameState = () => ({
+    intentionalConnect: false,
     selectedPlayingCard: null,
     selectedAutoPlayingCard: null,
 });
@@ -42,10 +43,11 @@ const connect = async (apiClient, wsClient, event) => {
         wsClient.setIntentionalReconnect(true);
 
         if (await initializeGame(apiClient)) {
-            await wsClient.connect(
+            wsClient.connect(
                 event => handleWsMessage(apiClient, event),
                 () => handleWsReopen(apiClient),
             );
+            gameState.intentionalConnect = true;
         }
     } finally {
         toggleElements(false);
@@ -282,7 +284,6 @@ const selectAutoPlayingCard = () => {
     const cardId = autoPlayCardModal.getAttribute("clicked-card-id");
     const clickedCard = Array.from(getPlayerHand().children)
         .find(card => card.getAttribute("cid") === cardId);
-    console.log(clickedCard);
     if (!clickedCard) return;
 
     Array.from(getPlayerHand().children).forEach(card => {
@@ -364,3 +365,25 @@ document.addEventListener("DOMContentLoaded", () => {
         window.bridgeServiceWsClient,
     );
 });
+
+// Try reconnect websocket on visibility change if disconnected
+const handleReconnectWebSocket = () => {
+    if (document.visibilityState !== "visible") return;
+    const { bridgeServiceApiClient: apiClient, bridgeServiceWsClient: wsClient } = window;
+    const shouldReconnect = () => {
+        const gameInput = getElement("game-id");
+        const playerInput = getElement("player-id");
+        return gameInput.value &&
+            playerInput.value &&
+            gameState.intentionalConnect &&
+            !wsClient.connected();
+    };
+    if (!shouldReconnect()) return;
+    console.log("Tab is visible again. Reconnecting WebSocket...");
+    wsClient.connect(
+        event => handleWsMessage(apiClient, event),
+        () => handleWsReopen(apiClient),
+    );
+}
+
+document.addEventListener("visibilitychange", handleReconnectWebSocket);
