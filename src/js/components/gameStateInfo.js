@@ -18,28 +18,36 @@ const buildGameStateInfo = (data) => {
     };
 
     const calculateSetsToWin = () => {
-        const isOnBidWinningTeam =
-            data.playerId === data.bidWinner ||
-            data.playerHand.includes(data.partner) ||
-            data.playerId === data.partnerPlayerId;
-
-        return isOnBidWinningTeam ? data.bidLevel + 6 : 13 - (data.bidLevel + 6) + 1;
+        return isOnBidWinningTeam() ? data.bidLevel + 6 : 13 - (data.bidLevel + 6) + 1;
     };
 
-    const determinePartner = () => {
-        if (data.playerHand.includes(data.partner)) return ` ${data.bidWinner}`;
-        if (!data.partnerPlayerId) return "<br>your partner";
-        
-        if (data.playerId === data.bidWinner) return ` ${data.partnerPlayerId}`;
-        if (data.playerId === data.partnerPlayerId) return ` ${data.bidWinner}`;
+    const isOnBidWinningTeam = () => isBidWinner() || isHoldingPartnerCard() || isPartnerPlayer();
+    
+    const isBidWinner = () => data.playerId === data.bidWinner;
+    const isHoldingPartnerCard = () => data.playerHand.includes(data.partner);
+    const isPartnerPlayer = () => data.playerId === data.partnerPlayerId;
 
-        const playerIds = data.scores.map(score => score.playerId);
-        const partnerId = playerIds.find(playerId =>
-            playerId !== data.playerId &&
-            playerId !== data.bidWinner &&
-            playerId !== data.partnerPlayerId
-        );
-        return ` ${partnerId}`;
+    const determinePartner = () => {
+        if (isHoldingPartnerCard()) {
+            return isBidWinner() ? " by yourself" : ` together with ${data.bidWinner}`;
+        }
+        if (!data.partnerPlayerId) return " together with<br>your partner";
+
+        if (isBidWinner() && isPartnerPlayer()) return " by yourself";
+        
+        if (isBidWinner()) return ` together with ${data.partnerPlayerId}`;
+
+        if (isPartnerPlayer()) return ` together with ${data.bidWinner}`;
+
+        const otherTeamMembers = data.scores
+            .map(score => score.playerId)
+            .filter(playerId =>
+                playerId !== data.playerId &&
+                playerId !== data.bidWinner &&
+                playerId !== data.partnerPlayerId
+            )
+            .join(" and ");
+        return ` together with ${otherTeamMembers}`;
     };
 
     const buildTooltipText = () => {
@@ -49,8 +57,9 @@ const buildGameStateInfo = (data) => {
         if (!data.partner) return text;
 
         const setsToWin = calculateSetsToWin();
+        const setsText = setsToWin === 1 ? " set" : " sets";
         const partner = determinePartner();
-        return `${text}<br>You have to win at least<br>${setsToWin} sets together with${partner}!`;
+        return `${text}<br>You have to win at least<br>${setsToWin}${setsText}${partner}!`;
     };
 
     tooltip.innerHTML = buildTooltipText();
