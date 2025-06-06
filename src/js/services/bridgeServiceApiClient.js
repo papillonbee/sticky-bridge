@@ -33,6 +33,7 @@ const bid = createEndpointCaller("bid");
 const partner = createEndpointCaller("partner");
 const trick = createEndpointCaller("trick");
 const resetGame = createEndpointCaller("reset");
+const togglePlayerBot = createEndpointCaller("bot");
 
 const createBridgeServiceApiClient = (config) => ({
     createGame: () => createGame(config),
@@ -42,6 +43,7 @@ const createBridgeServiceApiClient = (config) => ({
     partner: (partnerData) => partner(config, { partner: partnerData }),
     trick: (trickData) => trick(config, { trick: trickData }),
     resetGame: () => resetGame(config),
+    toggleBot: (toggleData) => togglePlayerBot(config, { toggle: toggleData }),
 });
 
 document.addEventListener("DOMContentLoaded", () => {

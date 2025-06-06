@@ -17,9 +17,24 @@
         <script src="./js/components/scoreBoard.js"></script>
         <script src="./js/utils/modalUtils.js"></script>
         <script src="./js/game/gameService.js"></script>
+        <script src="./js/components/sidebar.js"></script>
     </head>
     <body>
         <h2>Sticky Bridge!</h2>
+        <div class="hamburger" id="hamburger">☰</div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item">
+                <a href="#">Bot Mode</a>
+                <div class="toggle-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-bot" onchange="gameService.toggleBot(event)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="overlay" id="overlay"></div>
+        
         <form id="connect-form-container" action="" onsubmit="gameService.connect(event)">
             <label>Game: <input type="text" id="game-id" autocomplete="off" required/></label>
             <label>Player: <input type="text" id="player-id" autocomplete="off" required/></label>

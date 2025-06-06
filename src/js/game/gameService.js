@@ -66,9 +66,17 @@ const initializeGame = async (apiClient) => {
     const viewResponse = await apiClient.viewGame();
     if (!handleApiResponse(viewResponse)) return false;
 
+    const toggleResponse = await apiClient.toggleBot(null);
+    if (!handleApiResponse(toggleResponse)) return false;
+    updateToggleBot(toggleResponse.data);
+
     await updateGameState(apiClient, viewResponse.data);
     return true;
 };
+
+const updateToggleBot = (data) => {
+    getElement("toggle-bot").checked = data.bot;
+}
 
 // WebSocket Handlers
 const handleWsMessage = async (apiClient, event) => {
@@ -339,6 +347,21 @@ const sendNextGame = async (apiClient, event) => {
     });
 };
 
+const toggleBot = async (apiClient, wsClient, event) => {    
+    if (!wsClient.connected()) {
+        event.target.checked = false;
+        alert("Please connect to a game first");
+        return;
+    }
+    const toggleResponse = await apiClient.toggleBot(event.target.checked);
+    if (!handleApiResponse(toggleResponse)) {
+         // Revert if failed
+        event.target.checked = !event.target.checked;
+        return;
+    }
+    updateToggleBot(toggleResponse.data);
+};
+
 // Utility Functions
 const updateCardListeners = (condition, handler) => {
     Array.from(getPlayerHand().children).forEach(card => {
@@ -356,6 +379,7 @@ const createGameService = (apiClient, wsClient) => ({
     sendBid: event => sendBid(apiClient, event),
     sendChoosePartner: event => sendChoosePartner(apiClient, event),
     sendNextGame: event => sendNextGame(apiClient, event),
+    toggleBot: event => toggleBot(apiClient, wsClient, event),
 });
 
 // Initialize on DOM Load

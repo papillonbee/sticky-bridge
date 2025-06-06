@@ -6,10 +6,55 @@ html, body {
     overflow-x: hidden;
 }
 h2 {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;   
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 h2:hover {
     transform: scale(1.1);
+}
+.hamburger {
+    font-size: 28px;
+    padding: 16px;
+    cursor: pointer;
+    z-index: 1002;
+    position: fixed;
+    left: 0;
+}
+.sidebar {
+    background: white;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: -250px;
+    transition: left 0.3s ease;
+    padding: 60px 20px 20px;
+    z-index: 1001;
+}
+.sidebar.open {
+    left: 0;
+}
+.sidebar a {
+    display: block;
+    color: black;
+    text-decoration: none;
+    padding: 5px 0;
+}
+.sidebar-item {
+    flex-wrap: nowrap;
+    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 5px;
+}
+.overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    display: none;
+    z-index: 1000;
+}
+.overlay.show {
+    display: block;
 }
 #connect-form-container form {
     width: 90vw;
@@ -22,6 +67,49 @@ h2:hover {
 }
 #connect-form-container input {
     width: 18vw;
+}
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Arial, sans-serif;
+}
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+}
+.toggle-switch input {
+    display: none;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 25px;
+    transition: 0.3s;
+}
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 19px;
+    width: 19px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+input:checked + .slider {
+    background-color: #4CAF50;
+}
+input:checked + .slider::before {
+    transform: translateX(25px);
 }
 #chat-form-container {
     flex-wrap: nowrap;
