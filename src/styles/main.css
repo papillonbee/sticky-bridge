@@ -44,6 +44,7 @@ h2:hover {
     width: 18vw;
 }
 playing-card {
+    display: inline-block;
     width: 100px;
     height: 140px;
     margin-right: -70px;
